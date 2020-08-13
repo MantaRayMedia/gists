@@ -1,0 +1,16 @@
+  {% if rows %}
+    <div class="view-content">
+      {% set totalOrganisms = 0 %}
+      {% set displays = {'alleles': 'field_typing_number', 'genomes': 'field_genome_number', 'isolates': 'field_isolate_number'} %}
+      {% for view_rows in rows %}
+        {% for row in view_rows['#rows'] %}
+          {% set totalOrganisms = totalOrganisms + row['#row']._entity.get(displays[display_id]).0.value %}
+        {% endfor %}
+      {% endfor %}
+      {{ totalOrganisms|number_format(0, '.', ',') }}
+    </div>
+  {% elseif empty %}
+    <div class="view-empty">
+      {{ empty }}
+    </div>
+  {% endif %}
