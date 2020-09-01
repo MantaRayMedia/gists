@@ -7,7 +7,7 @@ Because we can't create gists for the organisation
 - #### [DB and queries.md](https://github.com/MantaRayMedia/gists/blob/master/DB%20and%20queries.md) ```Basic database interaction```
 - #### [Debugging.md](https://github.com/MantaRayMedia/gists/blob/master/Debugging.md) ```Dif ways of finding the little bugger :P```
 - #### [Dependency injection.md](https://github.com/MantaRayMedia/gists/blob/master/Dependency%20injection.md) ```How to inject custom service```
-- #### [Drupal 8 tips.md](https://github.com/MantaRayMedia/gists/blob/master/Drupal%20%20tips.md) ```Various links to D8```
+- #### [Drupal 8 tips.md](https://github.com/MantaRayMedia/gists/blob/master/Drupal%208%20tips.md) ```Various links to D8```
 - #### [Entity.md](https://github.com/MantaRayMedia/gists/blob/master/Entity.md) ```Entity manipulation```
 - #### [Field.md](https://github.com/MantaRayMedia/gists/blob/master/Field.md) ```Node Field manipulation```
 - #### [File.md](https://github.com/MantaRayMedia/gists/blob/master/File.md) ```File manipulation```
