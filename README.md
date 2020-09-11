@@ -2,24 +2,33 @@
 Because we can't create gists for the organisation
 
 ## Start here with *little* help:
-- #### [Block.md](https://github.com/MantaRayMedia/gists/blob/master/Block.md) ```Render custom and plugin blocks```
-- #### [Config.md](https://github.com/MantaRayMedia/gists/blob/master/Config.md) ```Get Drupal config, Update Drupal config```
-- #### [DB and queries.md](https://github.com/MantaRayMedia/gists/blob/master/DB%20and%20queries.md) ```Basic database interaction```
-- #### [Debugging.md](https://github.com/MantaRayMedia/gists/blob/master/Debugging.md) ```Dif ways of finding the little bugger :P```
-- #### [Dependency injection.md](https://github.com/MantaRayMedia/gists/blob/master/Dependency%20injection.md) ```How to inject custom service```
-- #### [Drupal 8 tips.md](https://github.com/MantaRayMedia/gists/blob/master/Drupal%208%20tips.md) ```Various links to D8```
-- #### [Entity.md](https://github.com/MantaRayMedia/gists/blob/master/Entity.md) ```Entity manipulation```
-- #### [Field.md](https://github.com/MantaRayMedia/gists/blob/master/Field.md) ```Node Field manipulation```
-- #### [File.md](https://github.com/MantaRayMedia/gists/blob/master/File.md) ```File manipulation```
-- #### [Form.md](https://github.com/MantaRayMedia/gists/blob/master/Form.md) ```Create form structure for node```
-- #### [Image.md](https://github.com/MantaRayMedia/gists/blob/master/Image.md) ```Get image with details```
-- #### [Misc.md](https://github.com/MantaRayMedia/gists/blob/master/Misc.md) ```Mixed functions and traits```
-- #### [Request.md](https://github.com/MantaRayMedia/gists/blob/master/Request.md) ```Request data in controller or .theme file```
-- #### [Route.md](https://github.com/MantaRayMedia/gists/blob/master/Route.md) ```Route specification for service, controller, ...```
-- #### [Url & Link.md](https://github.com/MantaRayMedia/gists/blob/master/Url%20%26%20Link.md) ```Get, generate, update```
-- #### [User.md](https://github.com/MantaRayMedia/gists/blob/master/User.md) ```Get user and it's data```
-- #### [View.md](https://github.com/MantaRayMedia/gists/blob/master/View.md) ```Get, render the views```
+| File | Description | Link |
+| --- | --- | --- |
+| `Block.md` | Render custom and plugin blocks | [open](https://github.com/MantaRayMedia/gists/blob/master/Block.md) |
+| `Config.md` | Get Drupal config, Update Drupal config | [open](https://github.com/MantaRayMedia/gists/blob/master/Config.md) |
+| `DB and queries.md` | Basic database interaction | [open](https://github.com/MantaRayMedia/gists/blob/master/DB%20and%20queries.md) |
+| `Debugging.md` | Dif ways of finding the little bugger :P | [open](https://github.com/MantaRayMedia/gists/blob/master/Debugging.md) |
+| `Dependency injection.md` | How to inject custom service | [open](https://github.com/MantaRayMedia/gists/blob/master/Dependency%20injection.md) |
+| `Drupal 8 tips.md` | How to inject custom service | [open](https://github.com/MantaRayMedia/gists/blob/master/Drupal%208%20tips.md) |
+| `Entity.md` | Entity manipulation | [open](https://github.com/MantaRayMedia/gists/blob/master/Entity.md) |
+| `Field.md` | Node Field manipulation | [open](https://github.com/MantaRayMedia/gists/blob/master/Field.md) |
+| `File.md` | File manipulation | [open](https://github.com/MantaRayMedia/gists/blob/master/File.md) |
+| `Form.md` | Create form structure for node | [open](https://github.com/MantaRayMedia/gists/blob/master/Form.md) |
+| `Image.md` | Get image with details | [open](https://github.com/MantaRayMedia/gists/blob/master/Image.md) |
+| `Misc.md` | Mixed functions and traits | [open](https://github.com/MantaRayMedia/gists/blob/master/Misc.md) |
+| `Request.md` | Request data in controller or .theme file | [open](https://github.com/MantaRayMedia/gists/blob/master/Request.md) |
+| `Route.md` | Route specification for service, controller, ... | [open](https://github.com/MantaRayMedia/gists/blob/master/Route.md) |
+| `Url & Link.md` | Get, generate, update | [open](https://github.com/MantaRayMedia/gists/blob/master/Url%20%26%20Link.md) |
+| `User.md` | Get user and it's data | [open](https://github.com/MantaRayMedia/gists/blob/master/User.md) |
+| `View.md` | Get, render the views | [open](https://github.com/MantaRayMedia/gists/blob/master/View.md) |
 
 
 ## Code examples:
-- #### [view.html.twig](https://github.com/MantaRayMedia/gists/blob/master/Code/view.html.twig) ```Get value of rows in twig template D8```
+| File | Description | Link |
+| --- | --- | --- |
+| `view.html.twig` | Get value of rows in twig template D8 | [open](https://github.com/MantaRayMedia/gists/blob/master/Code/view.html.twig) |
+
+## Patches:
+| Title | Description | Link |
+| --- | --- | --- |
+| Scoring matrix webform | Custom webform module override with call to scoring matrix recalculate | [open](https://github.com/MantaRayMedia/gists/blob/master/Patches/webform_call_custom_for_matrix_calculate.patch) |

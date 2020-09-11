@@ -1,0 +1,46 @@
+diff --git a/webform.components.inc b/webform.components.inc
+index f9412c6..0ff4ff5 100755
+--- a/webform.components.inc
++++ b/webform.components.inc
+@@ -679,14 +679,17 @@ function webform_component_edit_form_submit($form, &$form_state) {
+   if ($form_state['values']['clone']) {
+     webform_component_clone($node, $form_state['values']);
+     drupal_set_message(t('Component %name cloned.', array('%name' => $form_state['values']['name'])));
++    $actionType = 'clone';
+   }
+   elseif (!empty($form_state['values']['cid'])) {
+     webform_component_update($form_state['values']);
+     drupal_set_message(t('Component %name updated.', array('%name' => $form_state['values']['name'])));
++    $actionType = 'update';
+   }
+   else {
+     $cid = webform_component_insert($form_state['values']);
+     drupal_set_message(t('New component %name added.', array('%name' => $form_state['values']['name'])));
++    $actionType = 'add';
+   }
+ 
+   // Since Webform components have been updated but the node itself has not
+@@ -699,6 +702,11 @@ function webform_component_edit_form_submit($form, &$form_state) {
+   entity_get_controller('node')->resetCache(array($node->nid));
+ 
+   $form_state['redirect'] = array('node/' . $node->nid . '/webform/components', isset($cid) ? array('query' => array('cid' => $cid)) : array());
++
++  // if node is of type scoring_matrix fire the scoring matrix re-calculate
++  if ($node->type === 'scoring_matrix') {
++    addRemoveMaxScoreItem($node->nid, $form_state['values'], $actionType);
++  }
+ }
+ 
+ /**
+@@ -757,6 +765,11 @@ function webform_component_delete_form_submit($form, &$form_state) {
+   entity_get_controller('node')->resetCache(array($node->nid));
+ 
+   $form_state['redirect'] = 'node/' . $node->nid . '/webform/components';
++
++  // if node is of type scoring_matrix fire the scoring matrix re-calculate
++  if ($node->type === 'scoring_matrix') {
++    addRemoveMaxScoreItem($node->nid, $component, 'delete');
++  }
+ }
+ 
+ /**
