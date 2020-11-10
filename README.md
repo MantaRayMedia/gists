@@ -10,6 +10,7 @@ Because we can't create gists for the organisation
 | `Debugging.md` | Dif ways of finding the little bugger :P | [open](https://github.com/MantaRayMedia/gists/blob/master/Debugging.md) |
 | `Dependency injection.md` | How to inject custom service | [open](https://github.com/MantaRayMedia/gists/blob/master/Dependency%20injection.md) |
 | `Drupal 8 tips.md` | How to inject custom service | [open](https://github.com/MantaRayMedia/gists/blob/master/Drupal%208%20tips.md) |
+| `Drupal config sync exclusions.md` | Drupal items to exclude from config sync | [open](https://github.com/MantaRayMedia/gists/blob/master/Drupal%20config%20sync%20exclusions.md) |
 | `Entity.md` | Entity manipulation | [open](https://github.com/MantaRayMedia/gists/blob/master/Entity.md) |
 | `Field.md` | Node Field manipulation | [open](https://github.com/MantaRayMedia/gists/blob/master/Field.md) |
 | `File.md` | File manipulation | [open](https://github.com/MantaRayMedia/gists/blob/master/File.md) |
