@@ -28,6 +28,7 @@ Because we can't create gists for the organisation
 | File | Description | Link |
 | --- | --- | --- |
 | `view.html.twig` | Get value of rows in twig template D8 | [open](https://github.com/MantaRayMedia/gists/blob/master/Code/view.html.twig) |
+| `d8-es7-attachments.md` | D8 Attachment indexing (ES and Solr) | [open](https://github.com/MantaRayMedia/gists/blob/master/Code/d8-es7-attachments.md) |
 
 ## Patches:
 | Title | Description | Link |

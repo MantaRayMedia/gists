@@ -15,6 +15,16 @@ $node = \Drupal::entityTypeManager()->getStorage('node')->loadMultiple($entity_i
 $children = $this->entityTypeManager->getStorage('taxonomy_term')->loadChildren($object->tid);
 ```
 
+### Load Taxonomy children for known parent
+```
+$vid = 'my_vocab_machine_name';
+$parent_tid = 87;           // the parent term id
+$depth = 1;                 // 1 to get only immediate children, NULL to load entire tree
+$load_entities = FALSE;     // True will return loaded entities rather than ids
+$child_tids = \Drupal::entityTypeManager()->getStorage('taxonomy_term')->loadTree($vid, $parent_tid, $depth, $load_entities);
+$children = $this->entityTypeManager->getStorage('taxonomy_term')->loadChildren($object->tid);
+```
+
 ### Custom query
 ```
 /** $result contains IDs */
