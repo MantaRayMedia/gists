@@ -1,34 +1,50 @@
 diff --git a/webform_validation.module b/webform_validation.module
-index f9c9372..d65acf2 100644
+index f9c9372..6b3b9f3 100644
 --- a/webform_validation.module
 +++ b/webform_validation.module
-@@ -200,6 +200,12 @@ function webform_validation_validate($form, &$form_state) {
+@@ -186,7 +186,8 @@ function webform_validation_validate($form, &$form_state) {
+       }
+     }
+ 
+-    foreach ($rules as $rule) {
++    $errorArray = [];
++    foreach ($rules as $rulePos => $rule) {
+       // create a list of components that need validation against this rule (component id => user submitted value)
+       $items = array();
+       foreach ($rule['components'] as $cid => $component) {
+@@ -200,6 +201,11 @@ function webform_validation_validate($form, &$form_state) {
        // have the submitted values validated
        $errors = module_invoke_all("webform_validation_validate", $rule['validator'], $items, $component_definitions, $rule);
        if ($errors) {
 +        /**
-+         * if Errors set the value to 1 so rule can pick this up
++         * if Errors add 1 to array of all errors
 +         */
-+        $node->field_validation_error['und'][0]['value'] = 1;
-+        node_save($node);
++        $errorArray[$rulePos] = 1;
 +
          $errors = webform_validation_unprefix_keys($errors);
          $components = webform_validation_unprefix_keys($component_definitions);
          foreach ($errors as $item_key => $error) {
-@@ -221,6 +227,12 @@ function webform_validation_validate($form, &$form_state) {
-             form_set_error($error_key, $error);
-           }
+@@ -223,7 +229,19 @@ function webform_validation_validate($form, &$form_state) {
          }
-+      } else {
-+        /**
-+         * if no errors set the value to 0
-+         */
-+        $node->field_validation_error['und'][0]['value'] = 0;
-+        node_save($node);
        }
      }
++
++    /**
++     * if Errors set the value to 1 so rule can pick this up
++     */
++    if (in_array(1, $errorArray)) {
++      $node->field_validation_error['und'][0]['value'] = 1;
++      node_save($node);
++    } else {
++      $node->field_validation_error['und'][0]['value'] = 0;
++      node_save($node);
++    }
    }
-@@ -508,3 +520,4 @@ function webform_validation_webform_validator_alter(&$validators) {
++
+ }
+ 
+ /**
+@@ -508,3 +526,4 @@ function webform_validation_webform_validator_alter(&$validators) {
      }
    }
  }
