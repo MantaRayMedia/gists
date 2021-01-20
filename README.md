@@ -6,6 +6,7 @@ Because we can't create gists for the organisation
 | --- | --- | --- |
 | `Block.md` | Render custom and plugin blocks | [open](https://github.com/MantaRayMedia/gists/blob/master/Block.md) |
 | `Config.md` | Get Drupal config, Update Drupal config | [open](https://github.com/MantaRayMedia/gists/blob/master/Config.md) |
+| `D7 modules via DB.md` | Modules enable/disable via DB | [open](https://github.com/MantaRayMedia/gists/blob/master/D7%20modules%20via%20DB.md) |
 | `DB and queries.md` | Basic database interaction | [open](https://github.com/MantaRayMedia/gists/blob/master/DB%20and%20queries.md) |
 | `Debugging.md` | Dif ways of finding the little bugger :P | [open](https://github.com/MantaRayMedia/gists/blob/master/Debugging.md) |
 | `Dependency injection.md` | How to inject custom service | [open](https://github.com/MantaRayMedia/gists/blob/master/Dependency%20injection.md) |

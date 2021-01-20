@@ -1,0 +1,105 @@
+diff --git a/views_handler_filter_selective.inc b/views_handler_filter_selective.inc
+index 18ee394..da80af1 100644
+--- a/views_handler_filter_selective.inc
++++ b/views_handler_filter_selective.inc
+@@ -462,6 +462,15 @@ class views_handler_filter_selective extends views_handler_filter_in_operator {
+       // views_plugin_query_default::add_field() truncates aliases to 60
+       // characters.
+       $field_alias = substr($field_alias_original, 0, 60);
++
++      /** checking for search API */
++      $entity_type = NULL;
++      $search_api_view = (strpos($this->view->base_table, 'search_api_index_') === 0);
++      if ($search_api_view) {
++        $search_index = search_api_index_load(substr($this->view->base_table, 17));
++        $entity_type = $search_index->getEntityType();
++      }
++
+       foreach ($view_copy->result as $index => $row) {
+         // $key = $display_field_handler->get_value($row) should be more robust
+         // but values are sometimes nested arrays, and we need scalar values
+@@ -470,8 +479,25 @@ class views_handler_filter_selective extends views_handler_filter_in_operator {
+         if (!is_scalar($key)) {
+           $key = $row->{$field_alias};
+         }
+-        $value = strip_tags($view_copy->render_field($display_field_id, $index));
+-        $oids[$key] = empty($value) ? t('Empty (@key)', array('@key' => empty($key) ? json_encode($key) : $key)) : $value;
++
++        /** handle search API view */
++        if ($search_api_view) {
++          if (!empty($row->_entity_properties['search_api_id'])) {
++            $entity_array = entity_load($entity_type, [$row->_entity_properties['search_api_id']]);
++            if (!empty($entity_array)) {
++              $entity = reset($entity_array);
++              $field_view = field_view_field($entity_type, $entity, $display_field_id, ['label' => 'hidden']);
++              $ids = entity_extract_ids($entity_type, $entity);
++              $key = $ids[0];
++              $value = strip_tags(render($field_view));
++            }
++          }
++        } else {
++          $value = strip_tags($view_copy->render_field($display_field_id, $index));
++        }
++
++        $key_value = empty($key) ? json_encode($key) : $key;
++        $oids[$key] = empty($value) ? t('Empty (@key)', array('@key' => $key_value)) : $value;
+       }
+ 
+       // Sort values.
+@@ -576,4 +602,56 @@ class views_handler_filter_selective extends views_handler_filter_in_operator {
+     return $this->originalOptions;
+   }
+ 
++  public function op_simple()
++  {
++    if (strpos($this->view->base_table, 'search_api_index_') === 0) {
++      if ($this->operator === 'empty') {
++        $this->query->condition($this->real_field, NULL, '=', $this->options['group']);
++        return;
++      }
++
++      if ($this->operator === 'not empty') {
++        $this->query->condition($this->real_field, NULL, '<>', $this->options['group']);
++        return;
++      }
++
++      while (is_array($this->value) && count($this->value) === 1) {
++        $this->value = reset($this->value);
++      }
++
++      $operator = '=';
++      $conjunction = 'AND';
++      if ($this->operator === '=') {
++        $conjunction = 'OR';
++      } elseif ($this->operator === '<>') {
++        $operator = '<>';
++      }
++
++      if (is_array($this->value) && empty($this->value)) {
++        if ($operator != '<>') {
++          $this->query->condition($this->real_field, NULL, '=', $this->options['group']);
++        }
++        return;
++      }
++
++      if (is_scalar($this->value) && $this->value !== '') {
++        $this->query->condition($this->real_field, $this->value, $operator, $this->options['group']);
++        return;
++      }
++
++      if ($this->value) {
++        $filter = $this->query->createFilter($conjunction);
++        if ($filter) {
++          foreach ($this->value as $v) {
++            $filter->condition($this->real_field, $v, $operator);
++          }
++
++          $this->query->filter($filter, $this->options['group']);
++        }
++      }
++    } else {
++      parent::op_simple();
++    }
++  }
++
+ }
