@@ -1,8 +1,26 @@
 diff --git a/views_handler_filter_selective.inc b/views_handler_filter_selective.inc
-index 18ee394..da80af1 100644
+index 18ee394..176cd46 100644
 --- a/views_handler_filter_selective.inc
 +++ b/views_handler_filter_selective.inc
-@@ -462,6 +462,15 @@ class views_handler_filter_selective extends views_handler_filter_in_operator {
+@@ -374,7 +374,7 @@ class views_handler_filter_selective extends views_handler_filter_in_operator {
+             '@name' => $ui_name,
+             '@type' => $base_field,
+           )),
+-            'error');
++          'error');
+         return array();
+       }
+ 
+@@ -397,7 +397,7 @@ class views_handler_filter_selective extends views_handler_filter_in_operator {
+             '@name' => $ui_name,
+             '@type' => $base_field,
+           )),
+-            'error');
++          'error');
+         return array();
+       }
+ 
+@@ -462,16 +462,106 @@ class views_handler_filter_selective extends views_handler_filter_in_operator {
        // views_plugin_query_default::add_field() truncates aliases to 60
        // characters.
        $field_alias = substr($field_alias_original, 0, 60);
@@ -13,40 +31,115 @@ index 18ee394..da80af1 100644
 +      if ($search_api_view) {
 +        $search_index = search_api_index_load(substr($this->view->base_table, 17));
 +        $entity_type = $search_index->getEntityType();
++
++        $retrieved_ids = [];
++        $field_type = $search_index->getFields()[$display_field_id]['type'];
++        $field_entity_type = $search_index->getFields()[$display_field_id]['entity_type'] ?? null;
++//        var_dump($display_field_id, $field_type);
 +      }
 +
        foreach ($view_copy->result as $index => $row) {
          // $key = $display_field_handler->get_value($row) should be more robust
          // but values are sometimes nested arrays, and we need scalar values
-@@ -470,8 +479,25 @@ class views_handler_filter_selective extends views_handler_filter_in_operator {
-         if (!is_scalar($key)) {
-           $key = $row->{$field_alias};
-         }
--        $value = strip_tags($view_copy->render_field($display_field_id, $index));
--        $oids[$key] = empty($value) ? t('Empty (@key)', array('@key' => empty($key) ? json_encode($key) : $key)) : $value;
+         // for the filters.
+         $key = $display_field_handler->get_value($row);
+-        if (!is_scalar($key)) {
+-          $key = $row->{$field_alias};
 +
-+        /** handle search API view */
++        /**
++         * @TODO: when new type of data is returned from search_api, add into switch below
++         * @TODO: add new field_type
++         *
++         * supported types: taxonomy_term, date, string
++         *
++         * handle search API view
++         */
 +        if ($search_api_view) {
 +          if (!empty($row->_entity_properties['search_api_id'])) {
 +            $entity_array = entity_load($entity_type, [$row->_entity_properties['search_api_id']]);
 +            if (!empty($entity_array)) {
 +              $entity = reset($entity_array);
-+              $field_view = field_view_field($entity_type, $entity, $display_field_id, ['label' => 'hidden']);
-+              $ids = entity_extract_ids($entity_type, $entity);
-+              $key = $ids[0];
-+              $value = strip_tags(render($field_view));
++              $constructor = $entity->{$display_field_id};
++
++              if (isset($constructor)) {
++                switch ($field_entity_type) {
++                  case 'taxonomy_term':
++                    $field_value = $constructor['und'][0]['tid'];
++                    break;
++                  default:
++                    $field_value = $constructor['und'][0]['value'];
++                }
++
++                if (!in_array($field_value, $retrieved_ids)) {
++                  $retrieved_ids[] = $field_value;
++
++                  if ($field_entity_type) {
++                    $field_entity_array = entity_load($field_entity_type, [$field_value]);
++                    if (!empty($field_entity_array)) {
++                      $field_entity = reset($field_entity_array);
++                    }
++
++                    $render_field_name = $display_field_id;
++                    if ($field_entity_type === 'taxonomy_term') {
++                      $render_field_name = 'name_field';
++                    }
++
++                    $field_view = field_view_field($field_entity_type, $field_entity, $render_field_name, ['label' => 'hidden']);
++                    $ids = entity_extract_ids($field_entity_type, $field_entity);
++
++                    $key = $ids[0];
++                    $value = strip_tags(render($field_view));
++                  } else {
++//                    var_dump($field_type, $field_value);die;
++                    switch ($field_type) {
++                      case "date":
++                        $newDate = new \DateTime($field_value);
++                        $key = $field_value;
++                        $dateMapping = [
++                          'yyyy' => 'Y'
++                        ];
++                        $value = $newDate->format($dateMapping[$display_field['settings']['format_type']]);
++                        break;
++
++                      default:
++                        $key = $field_value;
++                        $value = $field_value;
++                    }
++//                    var_dump($value);die;
++                  }
++
++                  $key_value = empty($key) ? json_encode($key) : $key;
++                  $oids[$key] = empty($value) ? t('Empty (@key)', array('@key' => $key_value)) : $value;
++                }
++              }
 +            }
 +          }
-+        } else {
-+          $value = strip_tags($view_copy->render_field($display_field_id, $index));
-+        }
 +
-+        $key_value = empty($key) ? json_encode($key) : $key;
-+        $oids[$key] = empty($value) ? t('Empty (@key)', array('@key' => $key_value)) : $value;
++        } else {
++          if (!is_scalar($key)) {
++            $key = $row->{$field_alias};
++          }
++
++          $value = strip_tags($view_copy->render_field($display_field_id, $index));
++
++          $key_value = empty($key) ? json_encode($key) : $key;
++          $oids[$key] = empty($value) ? t('Empty (@key)', array('@key' => $key_value)) : $value;
+         }
+-        $value = strip_tags($view_copy->render_field($display_field_id, $index));
+-        $oids[$key] = empty($value) ? t('Empty (@key)', array('@key' => empty($key) ? json_encode($key) : $key)) : $value;
++
        }
  
        // Sort values.
-@@ -576,4 +602,56 @@ class views_handler_filter_selective extends views_handler_filter_in_operator {
+@@ -514,6 +604,7 @@ class views_handler_filter_selective extends views_handler_filter_in_operator {
+       $view_copy->destroy();
+     }
+ 
++//    var_dump($oids);
+     return self::$results[$signature];
+   }
+ 
+@@ -576,4 +667,56 @@ class views_handler_filter_selective extends views_handler_filter_in_operator {
      return $this->originalOptions;
    }
  
