@@ -1,0 +1,16 @@
+diff --git a/includes/view.inc b/includes/view.inc
+index 1704bce4..cf0cded2 100644
+--- a/includes/view.inc
++++ b/includes/view.inc
+@@ -470,6 +470,11 @@ class view extends views_db_object {
+           $this->exposed_input[$key] = $value;
+         }
+       }
++
++      // check for leftovers if filters ver deselected but not removed
++      foreach (array_diff_assoc($this->exposed_input, $_GET) as $key => $value) {
++        unset($this->exposed_input[$key]);
++      }
+     }
+ 
+     return $this->exposed_input;
