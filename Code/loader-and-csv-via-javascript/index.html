@@ -1,0 +1,128 @@
+<html>
+<head>
+<!--  important styling for spinning loader   -->
+    <style>
+        .loader {
+            position: relative;
+            /* border: 16px solid #f3f3f3;*/
+            /* border-radius: 50%;*/
+            /* border-top: 16px solid #008DC9;*/
+            background-image: url(icon.png);
+            width: 70px; /* set to size of the image */
+            height: 70px;  /* set to size of the image */
+            left: 50%;
+            top: 50%;
+            -webkit-animation: spin 2s linear infinite; /* Safari */
+            animation: spin 2s linear infinite;
+        }
+
+        #overlay {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            background: black;
+            opacity: .5;
+            z-index: 1050;
+        }
+
+        /* Safari */
+        @-webkit-keyframes spin {
+            0% {
+                -webkit-transform: rotate(0deg);
+            }
+            100% {
+                -webkit-transform: rotate(360deg);
+            }
+        }
+
+        @keyframes spin {
+            0% {
+                transform: rotate(0deg);
+            }
+            100% {
+                transform: rotate(360deg);
+            }
+        }
+    </style>
+
+<!--  styling for this demo  -->
+    <style>
+        .display-block {
+            display: block;
+        }
+        button {
+            margin-top: 20px;
+            margin-bottom: 20px;
+        }
+        span {
+            border: 2px solid;
+        }
+    </style>
+    <script type="application/javascript">
+        downloadData = function() {
+          // show the loader
+          // jquery would be:
+          // $('#overlay').show();
+          let overlay = document.getElementById('overlay');
+          overlay.style.display = 'block';
+
+          // we add a "timer" so that we can see the loader, this is just for demo purpose!!!!
+          // in real code, just remove the setTimeout ;)
+          setTimeout(function() {
+
+            // set some data, where text an be returned via ajax call to PHP
+            const text = 'some,csv,data';
+
+            // set the file name to be downloaded
+            const filename = 'test.csv'
+
+            // create new element
+            let element = document.createElement('a');
+
+            // set href to force download file of type text
+            element.setAttribute('href', 'data:text/plain;charset=utf-8,' + encodeURIComponent(text));
+
+            // define the filename to be downloaded
+            element.setAttribute('download', filename);
+
+            // hide this element from user
+            element.style.display = 'none';
+
+            // attach new a element to body of the document
+            document.body.appendChild(element);
+
+            // click the invisible link we have created
+            element.click();
+
+            // remove the new element from the document body
+            document.body.removeChild(element);
+
+            // hide the loader
+            // jquery would be:
+            // $('#overlay').hide();
+            overlay.style.display = 'none';
+
+          }, 3000);
+        }
+    </script>
+</head>
+<body>
+    <p>We can call the download function from any type of element</p>
+    <div class="display-block">
+        <span onclick="downloadData()">The span :)</span>
+    </div>
+    <div class="display-block">
+        <button onclick="downloadData()">Button</button>
+    </div>
+    <div class="display-block">
+        <a href="#" onclick="downloadData()">Link</a>
+    </div>
+
+    <div id="overlay">
+        <div class="loader"></div>
+    </div>
+</body>
+</html>
