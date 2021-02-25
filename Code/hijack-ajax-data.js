@@ -1,4 +1,20 @@
 /**
+ * Convert Object URL parameters
+ *
+ * in: {foo: "a b", bar: "c"}
+ * out: foo=a+b&bar=c
+ */
+serializeObject = function(obj) {
+  let str = [];
+  for (const p in obj) {
+    if (obj.hasOwnProperty(p)) {
+      str.push(encodeURIComponent(p) + "=" + encodeURIComponent(obj[p]));
+    }
+  }
+  return str.join("&");
+}
+
+/**
  * Convert URL parameters to Object
  *
  * in: foo=a&bar=b
