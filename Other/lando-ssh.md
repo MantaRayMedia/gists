@@ -1,6 +1,6 @@
 # SSh on Lando
 
-1. remove `lndo.site.*` foro `/.lando/certs` folder
+1. remove `lndo.site.*` from `/.lando/certs` folder
 2. run `docker rm -f landoproxyhyperion5000gandalfedition_proxy_1`
 3. import cert as defined per OS:
 
