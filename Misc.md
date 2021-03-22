@@ -15,6 +15,14 @@ $path_args = explode('/', $path);
 $route_name = \Drupal::service('current_route_match')->getRouteName();
 ```
 
+### Save file to public path
+```
+$output = 'Some file contents';
+$realBasePath = \Drupal::service('file_system')->realpath("public://");
+$filesystem = new Filesystem();
+$filesystem->dumpFile(sprintf('%s/%s', $realBasePath, $fileName), $output);
+```
+
 ### Redirect
 ```
 use Symfony\Component\HttpFoundation\RedirectResponse;

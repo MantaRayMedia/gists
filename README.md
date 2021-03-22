@@ -37,10 +37,11 @@ Because we can't create gists for the organisation
 ## Patches:
 | Title | Description | Link |
 | --- | --- | --- |
-| Selective filter | Ability to un-check last element | [open](https://github.com/MantaRayMedia/gists/blob/master/Patches/views_module_fix_for_selective_filter_uncheck_last.patch) |
-| Selective filter | Search API support | [open](https://github.com/MantaRayMedia/gists/blob/master/Patches/views_selective_filters-search_api.patch) |
+| Facets D8 | Facets hierarchy display showing only hierarchy tree from results | [open](https://github.com/MantaRayMedia/gists/blob/master/Patches/d8_facets_hierarchy_query_results_build_from_results.patch) |
 | Scoring matrix webform | Custom webform module override with call to scoring matrix recalculate | [open](https://github.com/MantaRayMedia/gists/blob/master/Patches/webform_call_custom_for_matrix_calculate.patch) |
 | Scoring matrix webform | Webform validation for application round | [open](https://github.com/MantaRayMedia/gists/blob/master/Patches/webform_validation-application-round.patch) |
+| Selective filter | Ability to un-check last element | [open](https://github.com/MantaRayMedia/gists/blob/master/Patches/views_module_fix_for_selective_filter_uncheck_last.patch) |
+| Selective filter | Search API support | [open](https://github.com/MantaRayMedia/gists/blob/master/Patches/views_selective_filters-search_api.patch) |
 
 ## Other:
 | Title | Description | Link |
