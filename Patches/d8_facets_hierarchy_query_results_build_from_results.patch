@@ -1,5 +1,5 @@
 diff --git a/src/Plugin/facets/query_type/SearchApiString.php b/src/Plugin/facets/query_type/SearchApiString.php
-index edbf66c..b5f3336 100644
+index edbf66c..1f75b48 100644
 --- a/src/Plugin/facets/query_type/SearchApiString.php
 +++ b/src/Plugin/facets/query_type/SearchApiString.php
 @@ -4,6 +4,8 @@ namespace Drupal\facets\Plugin\facets\query_type;
@@ -11,8 +11,25 @@ index edbf66c..b5f3336 100644
  use Drupal\search_api\Query\QueryInterface;
  
  /**
-@@ -61,8 +63,33 @@ class SearchApiString extends QueryTypePluginBase {
+@@ -39,6 +41,13 @@ class SearchApiString extends QueryTypePluginBase {
+         // Set the options for the actual query.
+         $options = &$query->getOptions();
+         $options['search_api_facets'][$field_identifier] = $this->getFacetOptions();
++
++        // When the minimum amount of results is set to zero (theoretically a
++        // negative value can be entered), the list of facet options should
++        // always be available (i.e., even when the search has no answers).
++        if ($this->facet->getMinCount() < 1) {
++          $options['search_api_facets_always'][$field_identifier] = TRUE;
++        }
+       }
+ 
+       // Add the filter to the query if there are active values.
+@@ -59,11 +68,36 @@ class SearchApiString extends QueryTypePluginBase {
+    */
+   public function build() {
      $query_operator = $this->facet->getQueryOperator();
++    $skip_count = $this->facet->getMinCount() < 1 || $query_operator == 'or';
  
      if (!empty($this->results)) {
 +      /** list of hierarchy taxonomy IDs to be rendered */
@@ -41,11 +58,12 @@ index edbf66c..b5f3336 100644
 +
        $facet_results = [];
        foreach ($this->results as $result) {
-+
-         if ($result['count'] || $query_operator == 'or') {
+-        if ($result['count'] || $query_operator == 'or') {
++        if ($result['count'] || $skip_count) {
            $result_filter = $result['filter'];
            if ($result_filter[0] === '"') {
-@@ -72,14 +99,20 @@ class SearchApiString extends QueryTypePluginBase {
+             $result_filter = substr($result_filter, 1);
+@@ -72,8 +106,13 @@ class SearchApiString extends QueryTypePluginBase {
              $result_filter = substr($result_filter, 0, -1);
            }
            $count = $result['count'];
@@ -60,10 +78,8 @@ index edbf66c..b5f3336 100644
 +          }
          }
        }
-+
        $this->facet->setResults($facet_results);
-     }
- 
+@@ -82,4 +121,4 @@ class SearchApiString extends QueryTypePluginBase {
      return $this->facet;
    }
  
