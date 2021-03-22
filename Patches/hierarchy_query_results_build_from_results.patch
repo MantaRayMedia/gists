@@ -1,0 +1,72 @@
+diff --git a/src/Plugin/facets/query_type/SearchApiString.php b/src/Plugin/facets/query_type/SearchApiString.php
+index edbf66c..b5f3336 100644
+--- a/src/Plugin/facets/query_type/SearchApiString.php
++++ b/src/Plugin/facets/query_type/SearchApiString.php
+@@ -4,6 +4,8 @@ namespace Drupal\facets\Plugin\facets\query_type;
+ 
+ use Drupal\facets\QueryType\QueryTypePluginBase;
+ use Drupal\facets\Result\Result;
++use Drupal\search_api\Item\Field;
++use Drupal\search_api\Item\Item;
+ use Drupal\search_api\Query\QueryInterface;
+ 
+ /**
+@@ -61,8 +63,33 @@ class SearchApiString extends QueryTypePluginBase {
+     $query_operator = $this->facet->getQueryOperator();
+ 
+     if (!empty($this->results)) {
++      /** list of hierarchy taxonomy IDs to be rendered */
++      $taxonomyIds = [];
++
++      if ($this->facet->getUseHierarchy()) {
++        $searchResults = $this->query->getResults()->getResultItems();
++
++        /** @var Item $searchItem */
++        foreach ($searchResults as $searchItem) {
++          $fieldName = $this->facet->getFieldIdentifier();
++
++          /** @var Field $field */
++          $field = $searchItem->getField($fieldName, false);
++
++          if ($field) {
++            $thisValues = $field->getValues();
++
++            /** foreach is faster than array_merge */
++            foreach ($thisValues as $singleId) {
++              array_push($taxonomyIds, $singleId);
++            }
++          }
++        }
++      }
++
+       $facet_results = [];
+       foreach ($this->results as $result) {
++
+         if ($result['count'] || $query_operator == 'or') {
+           $result_filter = $result['filter'];
+           if ($result_filter[0] === '"') {
+@@ -72,14 +99,20 @@ class SearchApiString extends QueryTypePluginBase {
+             $result_filter = substr($result_filter, 0, -1);
+           }
+           $count = $result['count'];
+-          $result = new Result($this->facet, $result_filter, $result_filter, $count);
+-          $facet_results[] = $result;
++
++          if (!$this->facet->getUseHierarchy() || (
++              $this->facet->getUseHierarchy() && in_array((int)$result_filter, $taxonomyIds)
++            )) {
++            $result = new Result($this->facet, $result_filter, $result_filter, $count);
++            $facet_results[] = $result;
++          }
+         }
+       }
++
+       $this->facet->setResults($facet_results);
+     }
+ 
+     return $this->facet;
+   }
+ 
+-}
++}
+\ No newline at end of file
