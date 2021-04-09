@@ -1,0 +1,72 @@
+diff --git a/includes/webform.submissions.inc b/includes/webform.submissions.inc
+index 9d5a436b9..6e3e861e4 100644
+--- a/includes/webform.submissions.inc
++++ b/includes/webform.submissions.inc
+@@ -80,11 +80,67 @@ function webform_submission_create($node, $account, array $form_state, $is_previ
+       'serial' => NULL,
+       'data' => $data,
+     );
++
++      // function trackCareerChange activities should be triggered only on career info webform and its hidden field identification is always at the end of field arrays
++      //career info webform has hardcoded string value career_info_form in hidden field career_info_form_id
++      $formIdentification = end($data)[0];
++
++      if ($formIdentification === 'career_info_form'){
++          trackCareerChange($form_state['input']['submitted']);
++      }
++
+     drupal_alter('webform_submission_create', $submission, $node, $account, $form_state);
+   }
+   return $submission;
+ }
+ 
++
++/**
++ * creates new career change activity instances on desired fields
++ * @param $newData
++ */
++function trackCareerChange($newData){
++
++    try{
++        $oldData = civicrm_api3('Contact', 'get', [
++            'sequential' => 1,
++            'return' => ["job_title", "current_employer", "custom_4", "custom_19", "custom_47", "custom_6", "custom_125", "custom_124", "custom_115", "custom_61", "custom_69", "custom_37"],
++            'id' => $newData['civicrm_1_contact_1_contact_existing'],
++        ]);
++    }
++    catch (CiviCRM_API3_Exception $e) {
++        error_log( $e);
++        return false;
++    }
++
++    $oldDataForComparison = $oldData['values'][0];
++
++    foreach ($oldDataForComparison as $oldDataKey => $careerChangeFieldOldValue) {
++        foreach ($newData as $newDataFieldKey => $careerChangeFieldNewValue){
++            //we need length of each civicrm contact id field because webform names fields in format civicrm_1_contact_1_contact_job_title
++            //if webform field matches with substring civicrm and civicrm contact id field at the end, old and new values are compared and new instance of Career change activity is created if value is changed
++            $oldDataKeyLength = strlen($oldDataKey)*(-1);
++            if (substr($newDataFieldKey,0,7) === 'civicrm' && $oldDataKey === substr($newDataFieldKey,$oldDataKeyLength) && $careerChangeFieldOldValue !== $careerChangeFieldNewValue){
++
++                try{
++                    civicrm_api3('Activity', 'create', [
++                        'activity_type_id' => "Career change",
++                        'custom_304' => $oldDataKey,
++                        'custom_305' => $careerChangeFieldOldValue,
++                        'custom_306' => $careerChangeFieldNewValue,
++                        'target_id' => $newData['civicrm_1_contact_1_contact_existing'],
++                    ]);
++                }
++                catch (CiviCRM_API3_Exception $e) {
++                    error_log( $e);
++                    return false;
++                }
++            }
++        }
++    }
++    return true;
++}
++
+ /**
+  * Update a webform submission entry in the database.
+  *
