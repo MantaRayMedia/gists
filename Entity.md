@@ -243,6 +243,19 @@ $new_field = BaseFieldDefinition::create('string')
 \Drupal::entityDefinitionUpdateManager()->installFieldStorageDefinition('<field_name>', '<entity_type_id>', '<provider>', $new_field);
 ```
 
+### Adding a new entity to an already installed plugin
+```php
+function firebase_push_notification_update_9102() {
+  \Drupal::entityDefinitionUpdateManager()->installEntityType((new \Drupal\firebase_push_notification\Entity\Notification())->getEntityType());
+}
+```
+
+Where 9 is the major Drupal version (could also be 7/8)
+1 is the minor Drupal version
+0 is the module's major version
+2 is the module's minor version
+`\Drupal\firebase_push_notification\Entity\Notification` is the newly created entity, extending ContentEntityBase
+
 ### Apply all entities changes
 ```
 \Drupal::entityDefinitionUpdateManager()->applyUpdates();
