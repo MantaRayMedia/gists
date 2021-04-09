@@ -42,6 +42,7 @@ Because we can't create gists for the organisation
 | Scoring matrix webform | Webform validation for application round | [open](https://github.com/MantaRayMedia/gists/blob/master/Patches/webform_validation-application-round.patch) |
 | Selective filter | Ability to un-check last element | [open](https://github.com/MantaRayMedia/gists/blob/master/Patches/views_module_fix_for_selective_filter_uncheck_last.patch) |
 | Selective filter | Search API support | [open](https://github.com/MantaRayMedia/gists/blob/master/Patches/views_selective_filters-search_api.patch) |
+| Career change activities webform | Custom webform module override with calls for creation new career change activities in civicrm  | [open](https://github.com/MantaRayMedia/gists/blob/master/Patches/create_career_change_activity_in_civicrm_on_field_change.patch) |
 
 ## Other:
 | Title | Description | Link |
