@@ -1,0 +1,32 @@
+diff --git a/includes/form.inc b/includes/form.inc
+index 1158fd031f..a6248d5879 100644
+--- a/includes/form.inc
++++ b/includes/form.inc
+@@ -1707,6 +1707,27 @@ function form_get_error($element) {
+  * Flags an element as having an error.
+  */
+ function form_error(&$element, $message = '') {
++  if (isset($element['#webform_component'])) {
++    global $validationError, $user;
++
++    $nid = $element['#webform_component']['nid'];
++
++    // get latest sid that hopefully is the one they've clicked
++    $pager_query = db_select('webform_submissions', 'ws')
++      ->fields('ws')
++      ->condition('ws.nid', $nid)
++      ->condition('ws.uid', $user->uid)
++      ->orderBy('ws.modified', 'DESC');
++    $result = $pager_query->execute();
++    $lastAdded = $result->fetchAssoc();
++
++    $sid = $lastAdded['sid'];
++
++    // add to global errors so that rule can get it
++    $validationError[$nid][$sid] = 1;
++    error_log(sprintf("Found error for %s\n", $sid), 3, "public://node.log");
++  }
++
+   form_set_error(implode('][', $element['#parents']), $message);
+ }
+ 
