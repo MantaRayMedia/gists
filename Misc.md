@@ -34,3 +34,8 @@ new RedirectResponse(\Drupal::url($route_name));
 $statistics = \Drupal::service('statistics.storage.node')->fetchView($variables['node']->id());
 $total_count = \Drupal::translation()->formatPlural( $statistics->getTotalCount(), '1 view', '@count views' );
 ```
+
+### When module not there anymore and get errors on `cim`
+```
+drush sql:query "DELETE FROM key_value WHERE collection='system.schema' AND name='PROBLEMATIC_MODULE';"
+```
