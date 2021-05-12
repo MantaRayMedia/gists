@@ -48,3 +48,5 @@ Because we can't create gists for the organisation
 | Title | Description | Link |
 | --- | --- | --- |
 | SSH on Lando  | Instructions to get it working on any box | [open](https://github.com/MantaRayMedia/gists/blob/master/Other/lando-ssh.md) |
+| Configuring Solr server | Instructions to get it working on any box | [open](https://github.com/MantaRayMedia/gists/blob/master/Other/solr-configuration.md) |
+
