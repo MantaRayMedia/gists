@@ -37,6 +37,19 @@
     sudo rm -f /usr/local/share/ca-certificates/lndo.site.crt
     sudo update-ca-certificates --fresh
     ```
+    
+    ### Arch / Manjaro
+    ```
+    # Add the Lando CA
+    sudo cp -r ~/.lando/certs/lndo.site.pem /etc/ca-certificates/lndo.site.pem
+    sudo cp -r ~/.lando/certs/lndo.site.crt /etc/ca-certificates/lndo.site.crt
+    sudo trust extract-compat
+    
+    # Remove Lando CA
+    sudo rm -f /etc/ca-certificates/lndo.site.pem
+    sudo rm -f /etc/ca-certificates/lndo.site.crt
+    sudo trust extract-compat
+    ```
 
 5. import certificate as per browser:
     
@@ -51,3 +64,5 @@
     - import `~/.lando/certs/lndo.site.pem`
     - enable _Trust this CA to identify websites._
 
+6. Restart the lando containers:
+    ```lando stop && lando start```
