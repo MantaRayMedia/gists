@@ -49,4 +49,5 @@ Because we can't create gists for the organisation
 | --- | --- | --- |
 | SSH on Lando  | Instructions to get it working on any box | [open](https://github.com/MantaRayMedia/gists/blob/master/Other/lando-ssh.md) |
 | Configuring Solr server | Instructions to get it working on any box | [open](https://github.com/MantaRayMedia/gists/blob/master/Other/solr-configuration.md) |
+| Sitemap cache warmer | Rebuild cache for pages from sitemap| [open](https://github.com/MantaRayMedia/gists/blob/master/Code/sitemap_cache_warmer.php) |
 
