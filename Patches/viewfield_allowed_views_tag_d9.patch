@@ -1,0 +1,41 @@
+diff --git a/src/Plugin/Field/FieldType/ViewfieldItem.php b/src/Plugin/Field/FieldType/ViewfieldItem.php
+index d3a3813..dd286d0 100644
+--- a/src/Plugin/Field/FieldType/ViewfieldItem.php
++++ b/src/Plugin/Field/FieldType/ViewfieldItem.php
+@@ -42,6 +42,7 @@ class ViewfieldItem extends EntityReferenceItem {
+     return [
+       'force_default' => 0,
+       'allowed_views' => [],
++      'allowed_views_tag' => '',
+       'allowed_display_types' => ['block' => 'block'],
+     ] + parent::defaultFieldSettings();
+   }
+@@ -127,6 +128,14 @@ class ViewfieldItem extends EntityReferenceItem {
+       '#description' => $this->t('Views available for content authors. Leave empty to allow all.'),
+     ];
+ 
++    $form['allowed_views_tag'] = [
++      '#type' => 'textfield',
++      '#title' => t('Allowed views tag'),
++      '#default_value' => $this->getSetting('allowed_views_tag'),
++      '#description' => $this->t('Views with associated tag. Leave empty to allow all.'),
++      '#autocomplete_route_name' => 'views_ui.autocomplete',
++    ];
++
+     $form['allowed_display_types'] = [
+       '#type' => 'checkboxes',
+       '#options' => $this->getDisplayTypeOptions(),
+@@ -179,10 +188,12 @@ class ViewfieldItem extends EntityReferenceItem {
+    *   The array of options.
+    */
+   public function getViewOptions($filter = TRUE) {
++    $allowed_tag = $this->getSetting('allowed_views_tag');
+     $views_options = [];
+     $allowed_views = $filter ? array_filter($this->getSetting('allowed_views')) : [];
+     foreach (Views::getEnabledViews() as $key => $view) {
+-      if (empty($allowed_views) || isset($allowed_views[$key])) {
++      $view_tag = $view->get('tag');
++      if (empty($allowed_views) && ($view_tag === $allowed_tag)) {
+         $views_options[$key] = FieldFilteredMarkup::create($view->get('label'));
+       }
+     }
