@@ -75,3 +75,8 @@ print '<PRE>'.print_r($var_name, true).'</PRE>';
 
 // Add ksm at the end of build() and getSearchQueryOptions()
 ```
+
+### Twig keeps throwing OutOfMemoryExceptions when doing a dump (local only)
+```
+https://stackoverflow.com/questions/14913859/twigs-dump-function-returns-a-blank-screen
+```
