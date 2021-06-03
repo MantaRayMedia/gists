@@ -39,3 +39,8 @@ $total_count = \Drupal::translation()->formatPlural( $statistics->getTotalCount(
 ```
 drush sql:query "DELETE FROM key_value WHERE collection='system.schema' AND name='PROBLEMATIC_MODULE';"
 ```
+
+### Twig keeps throwing OutOfMemoryExceptions when doing a dump (local only)
+```
+https://stackoverflow.com/questions/14913859/twigs-dump-function-returns-a-blank-screen
+```
