@@ -1,0 +1,19 @@
+/**
+ * find the function below and add this code in the beginning
+ * remove the duplicate code !!!
+ */
+ 
+function theme_photoswipe_imagefield($variables) {
+  $class = array('photoswipe');
+
+  if ($variables['image']['style_name'] === 'hide') {
+    $image = '';
+  } else {
+    if (!empty($variables['image']['style_name'])) {
+      $image = theme('image_style', $variables['image']);
+    } else {
+      $image = theme('image', $variables['image']);
+    }
+  }
+  
+/** not end of the function.... */
