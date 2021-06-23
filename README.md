@@ -32,7 +32,8 @@ Because we can't create gists for the organisation
 | `d8-es7-attachments.md` | D8 Attachment indexing (ES and Solr) | [open](https://github.com/MantaRayMedia/gists/blob/master/Code/d8-es7-attachments.md) |
 | `selective-filter-summary.js` | Summary of selected exposed filters | [open](https://github.com/MantaRayMedia/gists/blob/master/Code/selective-filter-summary.js) |
 | `loader-and-csv-via-javascript` | Overlay fullscreen loader with spinning image and vanilla javascript download data to csv | [open](https://github.com/MantaRayMedia/gists/blob/master/Code/loader-and-csv-via-javascript/index.html) |
-| `hijack-ajax-data` | Hijack ajax call in Drupal and modify form data with serialization | [open](https://github.com/MantaRayMedia/gists/blob/master/Code/hijack-ajax-data.js) |
+| `hijack-ajax-data.js` | Hijack ajax call in Drupal and modify form data with serialization | [open](https://github.com/MantaRayMedia/gists/blob/master/Code/hijack-ajax-data.js) |
+| `hidden-element-size.js` | jQuery extended function to get size of any element, even hidden | [open](https://github.com/MantaRayMedia/gists/blob/master/Code/hidden-element-size.js) |
 
 ## Patches:
 | Title | Description | Link |
