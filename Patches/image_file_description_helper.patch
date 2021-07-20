@@ -1,0 +1,15 @@
+diff --git a/modules/file/src/Plugin/Field/FieldType/FileItem.php b/modules/file/src/Plugin/Field/FieldType/FileItem.php
+index 41b30e9216..3a8f4c1992 100644
+--- a/modules/file/src/Plugin/Field/FieldType/FileItem.php
++++ b/modules/file/src/Plugin/Field/FieldType/FileItem.php
+@@ -315,6 +315,10 @@ class FileItem extends EntityReferenceItem {
+       $validators['file_validate_extensions'] = [$settings['file_extensions']];
+     }
+ 
++    if (!empty($settings['max_resolution']) || !empty($settings['min_resolution'])) {
++      $validators['file_validate_image_resolution']= [$settings['max_resolution'], $settings['min_resolution']];
++    }
++
+     return $validators;
+   }
+ 
