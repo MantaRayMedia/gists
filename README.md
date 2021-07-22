@@ -45,7 +45,7 @@ Because we can't create gists for the organisation
 | Selective filter | Search API support | [open](https://github.com/MantaRayMedia/gists/blob/master/Patches/views_selective_filters-search_api.patch) |
 | Career change activities webform | Custom webform module override with calls for creation new career change activities in civicrm  | [open](https://github.com/MantaRayMedia/gists/blob/master/Patches/create_career_change_activity_in_civicrm_on_field_change.patch) |
 | File module additional description helper on upload |Added description helpers for image sizes on upload  | [open](https://github.com/MantaRayMedia/gists/blob/master/Patches/image_file_description_helper.patch) |
-| Image widget crop changed soft limit reached message | [open](https://github.com/MantaRayMedia/gists/blob/master/Patches/soft-limit-message.patch) |
+| Image widget crop messages |Added description helpers for image sizes on upload  | [open](https://github.com/MantaRayMedia/gists/blob/master/Patches/soft-limit-message.patch) |
 
 ## Other:
 | Title | Description | Link |
