@@ -1,0 +1,14 @@
+diff --git a/js/ImageWidgetCropType.js b/js/ImageWidgetCropType.js
+index c8b6807..e7253b3 100644
+--- a/js/ImageWidgetCropType.js
++++ b/js/ImageWidgetCropType.js
+@@ -831,7 +831,8 @@
+       summary.push(Drupal.t('Cropping applied.'));
+     }
+     if (this.softLimit.reached.height || this.softLimit.reached.width) {
+-      summary.push(Drupal.t('Soft limit reached.'));
++      summary.push(Drupal.t('Image too small for selected crop - upload a bigger image.'));
++      summary.push(Drupal.t('Minimal size of image has to be ' + this.softLimit.width 'x' + this.softLimit.height + '.'));
+     }
+     return summary.join('<br>');
+   };
