@@ -8,7 +8,7 @@ index c8b6807..e7253b3 100644
      if (this.softLimit.reached.height || this.softLimit.reached.width) {
 -      summary.push(Drupal.t('Soft limit reached.'));
 +      summary.push(Drupal.t('Image too small for selected crop - upload a bigger image.'));
-+      summary.push(Drupal.t('Minimal size of image has to be ' + this.softLimit.width 'x' + this.softLimit.height + '.'));
++      summary.push(Drupal.t('Minimal size of image has to be ' + this.softLimit.width + 'x' + this.softLimit.height + '.'));
      }
      return summary.join('<br>');
    };
