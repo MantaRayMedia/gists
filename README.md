@@ -50,7 +50,8 @@ Because we can't create gists for the organisation
 ## Other:
 | Title | Description | Link |
 | --- | --- | --- |
-| SSH on Lando  | Instructions to get it working on any box | [open](https://github.com/MantaRayMedia/gists/blob/master/Other/lando-ssh.md) |
+| Lando stuff | Lando configurations | [open](https://github.com/MantaRayMedia/gists/blob/master/Lando.md) |
+| SSH on Lando | Instructions to get it working on any box | [open](https://github.com/MantaRayMedia/gists/blob/master/Other/lando-ssh.md) |
 | Configuring Solr server | Instructions to get it working on any box | [open](https://github.com/MantaRayMedia/gists/blob/master/Other/solr-configuration.md) |
 | Sitemap cache warmer | Rebuild cache for pages from sitemap| [open](https://github.com/MantaRayMedia/gists/blob/master/Code/sitemap_cache_warmer.php) |
 | OpenVPN AWS | Setting new users for VPN| [open](https://github.com/MantaRayMedia/gists/blob/master/OpenVPN.md) |
