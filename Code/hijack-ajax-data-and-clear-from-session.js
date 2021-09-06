@@ -58,7 +58,7 @@
           if (filtersToClear.length !== 0){
             $.ajax({
               type: "GET",
-              url: window.location.origin + "/ajax/unset-session-parameter?filter="+filtersToClear, //custom made endpoint, check module mrm_view_session_storage
+              url: window.location.origin + "/ajax/unset-session-parameter?filter="+filtersToClear, //custom made endpoint, check module mrm_view_session_storage in alnap project
               dataType: "json",
               async:false,
               success: function(data) {
