@@ -58,7 +58,7 @@
           if (filtersToClear.length !== 0){
             $.ajax({
               type: "GET",
-              url: window.location.origin + "/ajax/unset-session-parameter?filter="+filtersToClear,
+              url: window.location.origin + "/ajax/unset-session-parameter?filter="+filtersToClear, //custom made endpoint, check module mrm_view_session_storage
               dataType: "json",
               async:false,
               success: function(data) {
