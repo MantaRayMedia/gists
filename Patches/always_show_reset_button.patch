@@ -1,0 +1,18 @@
+diff --git a/src/Plugin/views/exposed_form/BetterExposedFilters.php b/src/Plugin/views/exposed_form/BetterExposedFilters.php
+index bde76e1..6a7e16f 100644
+--- a/src/Plugin/views/exposed_form/BetterExposedFilters.php
++++ b/src/Plugin/views/exposed_form/BetterExposedFilters.php
+@@ -819,10 +819,10 @@ class BetterExposedFilters extends InputRequired {
+     // If our form has no visible filters, hide the submit button.
+     $has_visible_filters = !empty(Element::getVisibleChildren($form)) ?: FALSE;
+     $form['actions']['submit']['#access'] = $has_visible_filters;
+-    // Never enable a reset button that has already been disabled.
+-    if (!isset($form['actions']['reset']['#access']) || $form['actions']['reset']['#access'] === TRUE) {
++    // Always show reset button
++    //if (!isset($form['actions']['reset']['#access']) || $form['actions']['reset']['#access'] === TRUE) {
+       $form['actions']['reset']['#access'] = $has_visible_filters;
+-    }
++    //}
+ 
+     // Ensure default process/pre_render callbacks are included when a BEF
+     // widget has added their own.
