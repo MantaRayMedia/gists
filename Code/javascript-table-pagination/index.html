@@ -1,0 +1,90 @@
+<html>
+<head>
+<!--  table pagination styling   -->
+    <style>
+        .pager {
+            margin: 10px 0;
+            border: none;
+            background-color: transparent;
+        }
+        .pager .pager-item {
+            padding: 10px;
+            margin-right: 10px;
+            text-align: center;
+            display: inline-block;
+            cursor: pointer;
+            background-color: #019E93;
+            transition: .5s background-color;
+            color: white;
+        }
+        .pager .pager-item.selected {
+            background-color: #4E4F53;
+        }
+        .pagination tr.inactive {
+            display: none;
+        }
+    </style>
+
+<!--  styling for this demo  -->
+    <style>
+        .display-block {
+            display: block;
+        }
+        button {
+            margin-top: 20px;
+            margin-bottom: 20px;
+        }
+        span {
+            border: 2px solid;
+        }
+    </style>
+    <script src="https://code.jquery.com/jquery-1.12.4.min.js"
+    integrity="sha256-ZosEbRLbNQzLpnKIkEdrPv7lOy9C27hHQ+Xp8a4MxAQ="
+    crossorigin="anonymous"></script>
+    <script type="application/javascript" src="pagination.js"></script>
+</head>
+<body>
+    <p>Required item on `&lt;table&gt;` is class "pagination".</p>
+    <p>Optional is per page, defined with data attribute `data-pagecount`</p>
+    <table style="width:100%" class="pagination" data-pagecount="2" border="1">
+        <thead>
+            <tr>
+                <th>Index</th>
+                <th>Name</th>
+                <th>Address</th>
+                <th>Phone</th>
+            </tr>
+        </thead>
+
+        <tbody>
+            <tr>
+                <td>1</td>
+                <td>Jernej</td>
+                <td>123 road</td>
+                <td>123-456-789</td>
+            </tr>
+
+            <tr>
+                <td>2</td>
+                <td>Dave</td>
+                <td>the road, 1</td>
+                <td>333-333-333</td>
+            </tr>
+
+            <tr>
+                <td>3</td>
+                <td>Steve</td>
+                <td>1 street</td>
+                <td>345-345-345</td>
+            </tr>
+
+            <tr>
+                <td>4</td>
+                <td>Angie</td>
+                <td>123 Mexico</td>
+                <td>+123 123123123</td>
+            </tr>
+        </tbody>
+    </table>
+</body>
+</html>
