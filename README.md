@@ -36,6 +36,7 @@ Because we can't create gists for the organisation
 | `hijack-ajax-data-and-clear-from-session.js` | Hijack ajax call in Drupal, check for empty filter group and clear filter data from session | [open](https://github.com/MantaRayMedia/gists/blob/master/Code/hijack-ajax-data-and-clear-from-session.js) |
 | `hidden-element-size.js` | jQuery extended function to get size of any element, even hidden | [open](https://github.com/MantaRayMedia/gists/blob/master/Code/hidden-element-size.js) |
 | `javascript-table-pagination` | jQuery any table to paginated | [open](https://github.com/MantaRayMedia/gists/blob/master/Code/javascript-table-pagination/index.html) |
+| `mrm-repo-version-scripts` | scripts to generate repository version files | [open](https://github.com/MantaRayMedia/gists/blob/master/Code/mrm-repo-version-scripts/README.md) |
 
 ## Patches:
 | Title | Description | Link |
