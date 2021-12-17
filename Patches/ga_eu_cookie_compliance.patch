@@ -1,0 +1,44 @@
+diff --git a/js/google_analytics.debug.js b/js/google_analytics.debug.js
+index 2df140a..1d4c1d7 100644
+--- a/js/google_analytics.debug.js
++++ b/js/google_analytics.debug.js
+@@ -13,6 +13,17 @@
+ 
+   $(document).ready(function () {
+ 
++    if(Drupal.eu_cookie_compliance) {
++      const postPreferencesLoadHandler = function(response) {
++        console.log(drupalSettings);
++        sendPageView(Drupal);
++      };
++
++      Drupal.eu_cookie_compliance('postPreferencesLoad', postPreferencesLoadHandler);
++      Drupal.eu_cookie_compliance('postStatusSave', postPreferencesLoadHandler);
++      ga("send", "pageview");
++    }
++
+     // Attach mousedown, keyup, touchstart events to document only and catch
+     // clicks on all elements.
+     $(document.body).on('mousedown keyup touchstart', function (event) {
+diff --git a/js/google_analytics.js b/js/google_analytics.js
+index 82b46cf..c2b5eb9 100644
+--- a/js/google_analytics.js
++++ b/js/google_analytics.js
+@@ -17,6 +17,17 @@
+     // clicks on all elements.
+     $(document.body).on('mousedown keyup touchstart', function (event) {
+ 
++      if(Drupal.eu_cookie_compliance) {
++        const postPreferencesLoadHandler = function(response) {
++          console.log(drupalSettings);
++          sendPageView(Drupal);
++        };
++
++        Drupal.eu_cookie_compliance('postPreferencesLoad', postPreferencesLoadHandler);
++        Drupal.eu_cookie_compliance('postStatusSave', postPreferencesLoadHandler);
++        ga("send", "pageview");
++      }
++
+       // Catch the closest surrounding link of a clicked element.
+       $(event.target).closest('a,area').each(function () {
+ 
