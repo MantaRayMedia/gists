@@ -1,15 +1,16 @@
 diff --git a/js/google_analytics.debug.js b/js/google_analytics.debug.js
-index 2df140a..1d4c1d7 100644
+index 2df140a..3d59939 100644
 --- a/js/google_analytics.debug.js
 +++ b/js/google_analytics.debug.js
-@@ -13,6 +13,17 @@
+@@ -13,6 +13,18 @@
  
    $(document).ready(function () {
  
 +    if(Drupal.eu_cookie_compliance) {
 +      const postPreferencesLoadHandler = function(response) {
-+        console.log(drupalSettings);
-+        sendPageView(Drupal);
++        if(typeof sendPageView === 'function') {
++          sendPageView(Drupal);
++        }
 +      };
 +
 +      Drupal.eu_cookie_compliance('postPreferencesLoad', postPreferencesLoadHandler);
@@ -21,17 +22,18 @@ index 2df140a..1d4c1d7 100644
      // clicks on all elements.
      $(document.body).on('mousedown keyup touchstart', function (event) {
 diff --git a/js/google_analytics.js b/js/google_analytics.js
-index 82b46cf..c2b5eb9 100644
+index 82b46cf..d1d3052 100644
 --- a/js/google_analytics.js
 +++ b/js/google_analytics.js
-@@ -17,6 +17,17 @@
+@@ -17,6 +17,18 @@
      // clicks on all elements.
      $(document.body).on('mousedown keyup touchstart', function (event) {
  
 +      if(Drupal.eu_cookie_compliance) {
 +        const postPreferencesLoadHandler = function(response) {
-+          console.log(drupalSettings);
-+          sendPageView(Drupal);
++          if(typeof sendPageView === 'function') {
++            sendPageView(Drupal);
++          }
 +        };
 +
 +        Drupal.eu_cookie_compliance('postPreferencesLoad', postPreferencesLoadHandler);
