@@ -2,8 +2,8 @@
 
 1. Add the following code to your `~/.bashrc`
 ```
-export REMORA_COMPOSER_REPOSITORIES="remora_custom_extensions remora_ui_module rem8min remora_base_theme remora_config twitter_feed entity_reference_media_enhanced drush9_custom_commands"
-export REMORA_LIBRARIES="jquery-ui-touch-punch.zip"
+export REMORA_COMPOSER_REPOSITORIES=(remora_custom_extensions remora_ui_module rem8min remora_base_theme remora_config twitter_feed entity_reference_media_enhanced drush9_custom_commands)
+export REMORA_LIBRARIES=(jquery-ui-touch-punch.zip)
 
 function new-remora() {
   if [ -z $1 ]; then
@@ -11,7 +11,7 @@ function new-remora() {
     return
   ;fi
 
-  if [ -z $2 ]; then
+  if [ -z $2 ]; then 
     echo "Please specify a project name"
     return
   ;fi
@@ -26,21 +26,30 @@ function new-remora() {
   sed -i "s/RANDOM_PORT/$RANDOM/g" .lando.yml
   sed -i "s/PROJECT_NAME_IN_LOWERCASE/$(echo $2 | tr '[:upper:]' '[:lower:]'|tr -s ' '|tr ' ' '_')/g" .lando.yml
 
-
+ 
   lando start
 
   echo -e "\033[0;31mPlease install the \e[4mMinimal\e[0m\033[0;31m site\033[0m"
   echo "Don't forget to change db host from localhost to database. All credentials are drupal9"
   echo "Waiting for user input..."
-  read -n 1
-
+  read -n 1 
+ 
   echo "Updating hash_salt"
-  grep "\$settings\['hash_salt'\] = '" web/sites/default/default.settings.php >> config/settings.local.php
+  grep "\$settings\['hash_salt'\] = '" web/sites/default/default.settings.php >> config/settings.local.php 
+
+  echo "Please enter github username: "
+  read github_username
+
+  echo "Please enter github token: "
+  read github_token
+
+  lando composer config --global --auth http-basic.github.com "$github_username" "$github_token" 
 
   echo "Adding repositories to composer.json"
-  IFS=' '; for module in "$REMORA_COMPOSER_REPOSITORIES"; do
+  for module in $REMORA_COMPOSER_REPOSITORIES; do
+    echo "Installing module $module"
     lando composer config "repositories.mantaraymedia/$module" vcs "git@github.com:MantaRayMedia/$module.git"
-    lando composer require $module "^1.0"
+    lando composer require "mantaraymedia/$module":"^1.0"
   done
 
   lando drush pm:e drush9_custom_commands remora_config
@@ -49,7 +58,7 @@ function new-remora() {
   lando drush rci -y
   lando drush cex -y
 
-  for lib in "$REMORA_LIBRARIES"; do
+  for lib in $REMORA_LIBRARIES; do
     echo "installig $lib";
     lando drush rli --library "$lib"
   done
@@ -60,7 +69,7 @@ function new-remora() {
 
   cd web/themes/contrib
   IFS=$'\n'; for f in $(find "$(pwd)" -maxdepth 1 ! -path "$(pwd)" -type d); do cd $f && lando npm install && lando gulp; done
-
+  
   echo "Have fun and don't forget to set config ignore"
   echo "Also setup Jenkins here: https://www.notion.so/mantaray/Prepare-project-for-Jenkins-AWS-c7dc23ec6b6043c6ad81b2abdd6ef99f"
 
