@@ -28,35 +28,36 @@ Because we can't create gists for the organisation
 ## Code examples:
 | File | Description | Link |
 | --- | --- | --- |
-| `view.html.twig` | Get value of rows in twig template D8 | [open](https://github.com/MantaRayMedia/gists/blob/master/Code/view.html.twig) |
 | `d8-es7-attachments.md` | D8 Attachment indexing (ES and Solr) | [open](https://github.com/MantaRayMedia/gists/blob/master/Code/d8-es7-attachments.md) |
-| `selective-filter-summary.js` | Summary of selected exposed filters | [open](https://github.com/MantaRayMedia/gists/blob/master/Code/selective-filter-summary.js) |
-| `loader-and-csv-via-javascript` | Overlay fullscreen loader with spinning image and vanilla javascript download data to csv | [open](https://github.com/MantaRayMedia/gists/blob/master/Code/loader-and-csv-via-javascript/index.html) |
+| `hidden-element-size.js` | jQuery extended function to get size of any element, even hidden | [open](https://github.com/MantaRayMedia/gists/blob/master/Code/hidden-element-size.js) |
 | `hijack-ajax-data.js` | Hijack ajax call in Drupal and modify form data with serialization | [open](https://github.com/MantaRayMedia/gists/blob/master/Code/hijack-ajax-data.js) |
 | `hijack-ajax-data-and-clear-from-session.js` | Hijack ajax call in Drupal, check for empty filter group and clear filter data from session | [open](https://github.com/MantaRayMedia/gists/blob/master/Code/hijack-ajax-data-and-clear-from-session.js) |
-| `hidden-element-size.js` | jQuery extended function to get size of any element, even hidden | [open](https://github.com/MantaRayMedia/gists/blob/master/Code/hidden-element-size.js) |
+| `is-php-running.sh` | bash script to check php-fpm service | [open](https://github.com/MantaRayMedia/gists/blob/master/Code/is-php-running.sh) |
 | `javascript-table-pagination` | jQuery any table to paginated | [open](https://github.com/MantaRayMedia/gists/blob/master/Code/javascript-table-pagination/index.html) |
+| `loader-and-csv-via-javascript` | Overlay fullscreen loader with spinning image and vanilla javascript download data to csv | [open](https://github.com/MantaRayMedia/gists/blob/master/Code/loader-and-csv-via-javascript/index.html) |
 | `mrm-repo-version-scripts` | scripts to generate repository version files | [open](https://github.com/MantaRayMedia/gists/blob/master/Code/mrm-repo-version-scripts/README.md) |
+| `selective-filter-summary.js` | Summary of selected exposed filters | [open](https://github.com/MantaRayMedia/gists/blob/master/Code/selective-filter-summary.js) |
+| `view.html.twig` | Get value of rows in twig template D8 | [open](https://github.com/MantaRayMedia/gists/blob/master/Code/view.html.twig) |
 
 ## Patches:
 | Title | Description | Link |
 | --- | --- | --- |
+| Better exposed filters reset button | Removed hiding of reset button when there are no filters selected  | [open](https://github.com/MantaRayMedia/gists/blob/master/Patches/always_show_reset_button.patch) |
+| Career change activities webform | Custom webform module override with calls for creation new career change activities in civicrm  | [open](https://github.com/MantaRayMedia/gists/blob/master/Patches/create_career_change_activity_in_civicrm_on_field_change.patch) |
 | Facets D8 | Facets hierarchy display showing only hierarchy tree from results | [open](https://github.com/MantaRayMedia/gists/blob/master/Patches/d8_facets_hierarchy_query_results_build_from_results.patch) |
+| File module additional description helper on upload |Added description helpers for image sizes on upload  | [open](https://github.com/MantaRayMedia/gists/blob/master/Patches/image_file_description_helper.patch) |
+| Image widget crop messages |Added description helpers for image sizes on upload  | [open](https://github.com/MantaRayMedia/gists/blob/master/Patches/soft-limit-message.patch) |
 | Scoring matrix webform | Custom webform module override with call to scoring matrix recalculate | [open](https://github.com/MantaRayMedia/gists/blob/master/Patches/webform_call_custom_for_matrix_calculate.patch) |
 | Scoring matrix webform | Webform validation for application round | [open](https://github.com/MantaRayMedia/gists/blob/master/Patches/webform_validation-application-round.patch) |
 | Selective filter | Ability to un-check last element | [open](https://github.com/MantaRayMedia/gists/blob/master/Patches/views_module_fix_for_selective_filter_uncheck_last.patch) |
 | Selective filter | Search API support | [open](https://github.com/MantaRayMedia/gists/blob/master/Patches/views_selective_filters-search_api.patch) |
-| Career change activities webform | Custom webform module override with calls for creation new career change activities in civicrm  | [open](https://github.com/MantaRayMedia/gists/blob/master/Patches/create_career_change_activity_in_civicrm_on_field_change.patch) |
-| File module additional description helper on upload |Added description helpers for image sizes on upload  | [open](https://github.com/MantaRayMedia/gists/blob/master/Patches/image_file_description_helper.patch) |
-| Image widget crop messages |Added description helpers for image sizes on upload  | [open](https://github.com/MantaRayMedia/gists/blob/master/Patches/soft-limit-message.patch) |
-| Better exposed filters reset button | Removed hiding of reset button when there are no filters selected  | [open](https://github.com/MantaRayMedia/gists/blob/master/Patches/always_show_reset_button.patch) |
 
 ## Other:
 | Title | Description | Link |
 | --- | --- | --- |
-| Lando stuff | Lando configurations | [open](https://github.com/MantaRayMedia/gists/blob/master/Lando.md) |
-| SSH on Lando | Instructions to get it working on any box | [open](https://github.com/MantaRayMedia/gists/blob/master/Other/lando-ssh.md) |
 | Configuring Solr server | Instructions to get it working on any box | [open](https://github.com/MantaRayMedia/gists/blob/master/Other/solr-configuration.md) |
-| Sitemap cache warmer | Rebuild cache for pages from sitemap| [open](https://github.com/MantaRayMedia/gists/blob/master/Code/sitemap_cache_warmer.php) |
+| Lando stuff | Lando configurations | [open](https://github.com/MantaRayMedia/gists/blob/master/Lando.md) |
 | OpenVPN AWS | Setting new users for VPN| [open](https://github.com/MantaRayMedia/gists/blob/master/OpenVPN.md) |
+| Sitemap cache warmer | Rebuild cache for pages from sitemap| [open](https://github.com/MantaRayMedia/gists/blob/master/Code/sitemap_cache_warmer.php) |
+| SSH on Lando | Instructions to get it working on any box | [open](https://github.com/MantaRayMedia/gists/blob/master/Other/lando-ssh.md) |
 
