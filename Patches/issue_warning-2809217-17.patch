@@ -1,0 +1,68 @@
+diff --git a/includes/common.inc b/includes/common.inc
+index 7b79558551..b1359b717d 100644
+--- a/includes/common.inc
++++ b/includes/common.inc
+@@ -6111,7 +6111,7 @@ function drupal_render(&$elements) {
+ 
+   // Initialize this element's #children, unless a #pre_render callback already
+   // preset #children.
+-  if (!isset($elements['#children'])) {
++  if (is_array($elements) && !isset($elements['#children'])) {
+     $elements['#children'] = '';
+   }
+   // Call the element's #theme function if it is set. Then any children of the
+@@ -6122,7 +6122,7 @@ function drupal_render(&$elements) {
+   // If #theme was not set and the element has children, render them now.
+   // This is the same process as drupal_render_children() but is inlined
+   // for speed.
+-  if ($elements['#children'] == '') {
++  if (isset($elements['#children']) && $elements['#children'] == '') {
+     foreach ($children as $key) {
+       $elements['#children'] .= drupal_render($elements[$key]);
+     }
+@@ -6160,14 +6160,17 @@ function drupal_render(&$elements) {
+ 
+   $prefix = isset($elements['#prefix']) ? $elements['#prefix'] : '';
+   $suffix = isset($elements['#suffix']) ? $elements['#suffix'] : '';
+-  $output = $prefix . $elements['#children'] . $suffix;
++  $output = $prefix . (isset($elements['#children']) ? $elements['#children'] : '') . $suffix;
+ 
+   // Cache the processed element if #cache is set.
+   if (isset($elements['#cache'])) {
+     drupal_render_cache_set($output, $elements);
+   }
+ 
+-  $elements['#printed'] = TRUE;
++  if(is_array($elements)) {
++    $elements['#printed'] = TRUE;
++  }
++  
+   return $output;
+ }
+ 
+@@ -6653,11 +6656,15 @@ function element_children(&$elements, $sort = FALSE) {
+   $sort = isset($elements['#sorted']) ? !$elements['#sorted'] : $sort;
+ 
+   // Filter out properties from the element, leaving only children.
+-  $count = count($elements);
++  if(is_array($elements)) {
++    $count = count($elements);
++  } else {
++    $count = 1;
++  }
+   $child_weights = array();
+   $i = 0;
+   $sortable = FALSE;
+-  foreach ($elements as $key => $value) {
++  foreach ((array) $elements as $key => $value) {
+     if (is_int($key) || $key === '' || $key[0] !== '#') {
+       if (is_array($value) && isset($value['#weight'])) {
+         $weight = $value['#weight'];
+@@ -6668,6 +6675,7 @@ function element_children(&$elements, $sort = FALSE) {
+       }
+       // Support weights with up to three digit precision and conserve the
+       // insertion order.
++      $weight = (float) $weight;
+       $child_weights[$key] = floor($weight * 1000) + $i / $count;
+     }
+     $i++;
