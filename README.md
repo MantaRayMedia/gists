@@ -47,7 +47,6 @@ Because we can't create gists for the organisation
 | Facets D8 | Facets hierarchy display showing only hierarchy tree from results | [open](https://github.com/MantaRayMedia/gists/blob/master/Patches/d8_facets_hierarchy_query_results_build_from_results.patch) |
 | File module additional description helper on upload |Added description helpers for image sizes on upload  | [open](https://github.com/MantaRayMedia/gists/blob/master/Patches/image_file_description_helper.patch) |
 | Image widget crop messages |Added description helpers for image sizes on upload  | [open](https://github.com/MantaRayMedia/gists/blob/master/Patches/soft-limit-message.patch) |
-| Non clickable map | non clickable map on remora_addon_module | [open](https://github.com/MantaRayMedia/gists/blob/master/Patches/non_clickable_map.patch) |
 | Scoring matrix webform | Custom webform module override with call to scoring matrix recalculate | [open](https://github.com/MantaRayMedia/gists/blob/master/Patches/webform_call_custom_for_matrix_calculate.patch) |
 | Scoring matrix webform | Webform validation for application round | [open](https://github.com/MantaRayMedia/gists/blob/master/Patches/webform_validation-application-round.patch) |
 | Selective filter | Ability to un-check last element | [open](https://github.com/MantaRayMedia/gists/blob/master/Patches/views_module_fix_for_selective_filter_uncheck_last.patch) |
