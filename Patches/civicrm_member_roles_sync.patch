@@ -1,0 +1,37 @@
+diff --git a/src/CivicrmMemberRoles.php b/src/CivicrmMemberRoles.php
+index c6786c7..c10bf4e 100644
+--- a/src/CivicrmMemberRoles.php
++++ b/src/CivicrmMemberRoles.php
+@@ -8,6 +8,7 @@ use Drupal\Core\Database\Connection;
+ use Drupal\Core\Entity\EntityTypeManagerInterface;
+ use Drupal\Core\Session\AccountInterface;
+ use Drupal\user\UserInterface;
++use Drupal\Core\Database;
+ 
+ /**
+  * Provides civicrm member roles sync and utility functions.
+@@ -67,7 +68,7 @@ class CivicrmMemberRoles {
+     $this->civicrm = $civicrm;
+     $this->config = $configFactory->get('civicrm_member_roles.settings');
+     $this->entityTypeManager = $entityTypeManager;
+-    $this->database = $database;
++    $this->database = $this->getDatabase();
+   }
+ 
+   /**
+@@ -448,4 +449,15 @@ class CivicrmMemberRoles {
+     return array_unique($roles);
+   }
+ 
++  /**
++   * Gets the database.
++   *
++   * @return \Drupal\Core\Database\Connection
++   *   The database.
++   */
++  protected function getDatabase() {
++    $connection = Database::getConnection('default', 'civicrm');
++    return $connection;
++  }
++
+ }
