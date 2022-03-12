@@ -1,24 +1,29 @@
-diff --git a/civicrm_group_roles.services.yml b/civicrm_group_roles.services.yml
-index f6948ff..cf059b2 100644
---- a/civicrm_group_roles.services.yml
-+++ b/civicrm_group_roles.services.yml
-@@ -4,4 +4,4 @@ services:
-     arguments: ['@civicrm', '@config.factory', '@entity_type.manager']
-   civicrm_group_roles.batch.sync:
-     class: \Drupal\civicrm_group_roles\Batch\Sync
--    arguments: ['@string_translation', '@messenger']
-+    arguments: ['@string_translation']
-diff --git a/src/CivicrmGroupRoles.php b/src/CivicrmGroupRoles.php
-index 1ce2474..992e1c1 100644
---- a/src/CivicrmGroupRoles.php
-+++ b/src/CivicrmGroupRoles.php
-@@ -476,7 +476,8 @@ function validateGroups(array $groups) {
-    *   The database.
-    */
-   protected function getDatabase() {
--    return \Drupal::database();
-+    $connection = \Drupal\Core\Database\Database::getConnection('default', 'civicrm');
-+    return $connection;
+diff --git a/src/CivicrmMemberRoles.php b/src/CivicrmMemberRoles.php
+index c6786c7..75c6147 100644
+--- a/src/CivicrmMemberRoles.php
++++ b/src/CivicrmMemberRoles.php
+@@ -67,7 +67,7 @@ class CivicrmMemberRoles {
+     $this->civicrm = $civicrm;
+     $this->config = $configFactory->get('civicrm_member_roles.settings');
+     $this->entityTypeManager = $entityTypeManager;
+-    $this->database = $database;
++    $this->database = $this->getDatabase();
    }
 
+   /**
+@@ -448,4 +448,15 @@ class CivicrmMemberRoles {
+     return array_unique($roles);
+   }
+
++  /**
++   * Gets the database.
++   *
++   * @return \Drupal\Core\Database\Connection
++   *   The database.
++   */
++  protected function getDatabase() {
++    $connection = \Drupal\Core\Database\Database::getConnection('default', 'civicrm');
++    return $connection;
++  }
++
  }
