@@ -6,7 +6,7 @@ index c6786c7..c10bf4e 100644
  use Drupal\Core\Entity\EntityTypeManagerInterface;
  use Drupal\Core\Session\AccountInterface;
  use Drupal\user\UserInterface;
-+use Drupal\Core\Database;
++use \Drupal\Core\Database;
  
  /**
   * Provides civicrm member roles sync and utility functions.
