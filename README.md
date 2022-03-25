@@ -46,6 +46,7 @@ Because we can't create gists for the organisation
 | Career change activities webform | Custom webform module override with calls for creation new career change activities in civicrm  | [open](https://github.com/MantaRayMedia/gists/blob/master/Patches/create_career_change_activity_in_civicrm_on_field_change.patch) |
 | CiviCRM group roles sync | fix for sync between civiCRM and Drupal9 | [open](https://github.com/MantaRayMedia/gists/blob/master/Patches/civicrm_group_roles_sync.patch) |
 | CiviCRM member roles sync | fix for sync of member roles between civiCRM and Drupal9 | [open](https://github.com/MantaRayMedia/gists/blob/master/Patches/civicrm_member_roles_sync.patch) |
+| Countries info | Added UK countries | [open](https://github.com/MantaRayMedia/gists/blob/master/Patches/uk_countries_divided.patch) |
 | Facets D8 | Facets hierarchy display showing only hierarchy tree from results | [open](https://github.com/MantaRayMedia/gists/blob/master/Patches/d8_facets_hierarchy_query_results_build_from_results.patch) |
 | File module additional description helper on upload |Added description helpers for image sizes on upload  | [open](https://github.com/MantaRayMedia/gists/blob/master/Patches/image_file_description_helper.patch) |
 | Image widget crop messages |Added description helpers for image sizes on upload  | [open](https://github.com/MantaRayMedia/gists/blob/master/Patches/soft-limit-message.patch) |
