@@ -1,0 +1,41 @@
+diff --git a/config/field.storage.taxonomy_term.field_citf_iso2_code.yml b/config/field.storage.taxonomy_term.field_citf_iso2_code.yml
+index 514b7fc..ba8d1f2 100644
+--- a/config/field.storage.taxonomy_term.field_citf_iso2_code.yml
++++ b/config/field.storage.taxonomy_term.field_citf_iso2_code.yml
+@@ -8,7 +8,7 @@ field_name: field_citf_iso2_code
+ entity_type: taxonomy_term
+ type: string
+ settings:
+-  max_length: 3
++  max_length: 15
+   is_ascii: false
+   case_sensitive: false
+ module: core
+diff --git a/config/field.storage.taxonomy_term.field_citf_iso3_code.yml b/config/field.storage.taxonomy_term.field_citf_iso3_code.yml
+index b6c1ed0..af4c3f7 100644
+--- a/config/field.storage.taxonomy_term.field_citf_iso3_code.yml
++++ b/config/field.storage.taxonomy_term.field_citf_iso3_code.yml
+@@ -8,7 +8,7 @@ field_name: field_citf_iso3_code
+ entity_type: taxonomy_term
+ type: string
+ settings:
+-  max_length: 5
++  max_length: 10
+   is_ascii: false
+   case_sensitive: false
+ module: core
+diff --git a/data/countries.csv b/data/countries.csv
+index d56970d..d7400f5 100755
+--- a/data/countries.csv
++++ b/data/countries.csv
+@@ -235,6 +235,10 @@
+ "UA","UKR","Ukraine","Ukraine","804","EU","1"
+ "AE","ARE","United Arab Emirates","United Arab Emirates","784","AS","1"
+ "GB","GBR","United Kingdom","United Kingdom of Great Britain and Northern Ireland","826","EU","1"
++"GB-NIR","GB-NIR","Northern Ireland","Northern Ireland","1826","EU","1"
++"GB-SCT","GB-SCT","Scotland","Scotland","1827","EU","1"
++"GB-ENG","GB-ENG","England","England","1828","EU","1"
++"GB-WLS","GB-WLS","Wales","Wales","1828","EU","1"
+ "US","USA","United States","United States of America","840","NA","1"
+ "UM","UMI","United States Minor Outlying Islands","United States Minor Outlying Islands","581","OC","1"
+ "UY","URY","Uruguay","Eastern Republic of Uruguay","858","SA","1"
