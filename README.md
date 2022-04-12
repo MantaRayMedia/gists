@@ -63,4 +63,4 @@ Because we can't create gists for the organisation
 | OpenVPN AWS | Setting new users for VPN| [open](https://github.com/MantaRayMedia/gists/blob/master/OpenVPN.md) |
 | Sitemap cache warmer | Rebuild cache for pages from sitemap| [open](https://github.com/MantaRayMedia/gists/blob/master/Code/sitemap_cache_warmer.php) |
 | SSH on Lando | Instructions to get it working on any box | [open](https://github.com/MantaRayMedia/gists/blob/master/Other/lando-ssh.md) |
-
+| Setting up Remora | An automated script to setup Remora9 sites | [open](https://github.com/MantaRayMedia/gists/blob/master/Remora8/Setup.md) |
