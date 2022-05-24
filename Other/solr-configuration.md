@@ -1,4 +1,4 @@
-# Configuring Solr server
+# Configuring Solr on Lando
 
 1. Go to the Search API page and create new solr server (skip it if you already have it)
 2. On the Searh APi page your server appeared and from the Operations dropdown menu choose option Get config.zip
