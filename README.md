@@ -61,7 +61,7 @@ Because we can't create gists for the organisation
 |-------------------------|--------------------------------------------|------------------------------------------------------------------------------------------|
 | AWS help                | Various instructions for AWS               | [open](https://github.com/MantaRayMedia/gists/blob/master/Other/aws.md)                  |
 | Node and npm errors     | Help scripts about errors                  | [open](https://github.com/MantaRayMedia/gists/blob/master/Other/npm-errors.md)           |
-| Configuring Solr server | Instructions to get it working on any box  | [open](https://github.com/MantaRayMedia/gists/blob/master/Other/solr-configuration.md)   |
+| Configuring Solr on Lando | Instructions to get it working on any Lando box  | [open](https://github.com/MantaRayMedia/gists/blob/master/Other/solr-configuration.md)   |
 | Lando stuff             | Lando configurations                       | [open](https://github.com/MantaRayMedia/gists/blob/master/Lando.md)                      |
 | OpenVPN AWS             | Setting new users for VPN                  | [open](https://github.com/MantaRayMedia/gists/blob/master/OpenVPN.md)                    |
 | Sitemap cache warmer    | Rebuild cache for pages from sitemap       | [open](https://github.com/MantaRayMedia/gists/blob/master/Code/sitemap_cache_warmer.php) |
