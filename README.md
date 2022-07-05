@@ -5,6 +5,7 @@ Because we can't create gists for the organisation
 | File                               | Description                                      | Link                                                                                              |
 |------------------------------------|--------------------------------------------------|---------------------------------------------------------------------------------------------------|
 | `Block.md`                         | Render custom and plugin blocks                  | [open](https://github.com/MantaRayMedia/gists/blob/master/Block.md)                               |
+| `Commands.md`                    | Useful commands to streamline setting up your local environemnt | [open](https://github.com/MantaRayMedia/gists/blob/master/Lando/Commands.md)    |
 | `Config.md`                        | Get Drupal config, Update Drupal config          | [open](https://github.com/MantaRayMedia/gists/blob/master/Config.md)                              |
 | `D7 modules via DB.md`             | Modules enable/disable via DB                    | [open](https://github.com/MantaRayMedia/gists/blob/master/D7%20modules%20via%20DB.md)             |
 | `DB and queries.md`                | Basic database interaction                       | [open](https://github.com/MantaRayMedia/gists/blob/master/DB%20and%20queries.md)                  |
@@ -23,6 +24,7 @@ Because we can't create gists for the organisation
 | `Url & Link.md`                    | Get, generate, update                            | [open](https://github.com/MantaRayMedia/gists/blob/master/Url%20%26%20Link.md)                    |
 | `User.md`                          | Get user and it's data                           | [open](https://github.com/MantaRayMedia/gists/blob/master/User.md)                                |
 | `View.md`                          | Get, render the views                            | [open](https://github.com/MantaRayMedia/gists/blob/master/View.md)                                |
+
 
 
 ## Code examples:
