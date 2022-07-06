@@ -2,8 +2,9 @@
 Some commands to help manage your local Lando environment
 
 # Changing settings for local
-Updates the SMTP host and port so emails won't go out when copying the dev DB
-Updates all user passwords to the defined password or cheese if unspecified
+Updates the SMTP host and port so emails won't go out when copying the dev DB  
+Updates all user passwords to the defined password or cheese if unspecified  
+This command depends on [Updating all users' password](https://github.com/MantaRayMedia/gists/blob/master/Lando/Commands.md#updating-all-users-password)
 
 ```bash
 # Make the drupal config safe for local development
