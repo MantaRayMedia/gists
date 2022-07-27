@@ -1,0 +1,24 @@
+diff --git a/core/modules/views/src/Plugin/views/field/BulkForm.php b/core/modules/views/src/Plugin/views/field/BulkForm.php
+index 04c58e46ac..5a8cf2c49e 100644
+--- a/core/modules/views/src/Plugin/views/field/BulkForm.php
++++ b/core/modules/views/src/Plugin/views/field/BulkForm.php
+@@ -318,7 +318,8 @@ public function viewsForm(&$form, FormStateInterface $form_state) {
+       $form['header'][$this->options['id']]['action'] = [
+         '#type' => 'select',
+         '#title' => $this->options['action_title'],
+-        '#options' => $this->getBulkOptions(),
++        '#options' => array_merge(['' => '- Select action -'], $this->getBulkOptions()),
++        '#default_value' => ['' => '- Select action -'],
+       ];
+ 
+       // Duplicate the form actions into the action container in the header.
+@@ -375,7 +376,8 @@ protected function getBulkOptions($filtered = TRUE) {
+    *   Thrown when the user tried to access an action without access to it.
+    */
+   public function viewsFormSubmit(&$form, FormStateInterface $form_state) {
+-    if ($form_state->get('step') == 'views_form_views_form') {
++    if ($form_state->get('step') == 'views_form_views_form' &&
++      !empty($this->actions[$form_state->getValue('action')])) {
+       // Filter only selected checkboxes. Use the actual user input rather than
+       // the raw form values array, since the site data may change before the
+       // bulk form is submitted, which can lead to data loss.
