@@ -27,7 +27,7 @@ index 0000000..d5eef68
 +  system: {}
 +  blog: {}
 diff --git a/src/Plugin/Field/FieldType/ViewfieldItem.php b/src/Plugin/Field/FieldType/ViewfieldItem.php
-index d3a3813..45a2fd1 100644
+index d3a3813..844e1fd 100644
 --- a/src/Plugin/Field/FieldType/ViewfieldItem.php
 +++ b/src/Plugin/Field/FieldType/ViewfieldItem.php
 @@ -2,14 +2,21 @@
@@ -52,11 +52,12 @@ index d3a3813..45a2fd1 100644
  
  /**
   * Plugin implementation of the 'viewfield' field type.
-@@ -26,6 +33,18 @@ use Drupal\views\Views;
+@@ -26,6 +33,21 @@ use Drupal\views\Views;
   */
  class ViewfieldItem extends EntityReferenceItem {
  
-+  private const YML_PATH = __DIR__ . '/../../../../config/filtering/display_filters.yml';
++  /** @var string The config path relative to the module's directory */
++  private const YML_PATH = 'config/filtering/display_filters.yml';
 +
 +  private string $ymlFilePath ;
 +
@@ -64,14 +65,16 @@ index d3a3813..45a2fd1 100644
 +  public function __construct(ComplexDataDefinitionInterface $definition, $name = NULL, TypedDataInterface $parent = NULL)
 +  {
 +    parent::__construct($definition, $name, $parent);
-+    $this->ymlFilePath = Drupal::service('file_system')->realpath(self::YML_PATH);
++    $moduleHandler = Drupal::service('module_handler');
 +
++    $ymlPath = sprintf('%s/%s', $moduleHandler->getModule('viewfield')->getPath(), self::YML_PATH);
++    $this->ymlFilePath = Drupal::service('file_system')->realpath($ymlPath);
 +  }
 +
    /**
     * {@inheritdoc}
     */
-@@ -216,6 +235,38 @@ class ViewfieldItem extends EntityReferenceItem {
+@@ -216,6 +238,38 @@ class ViewfieldItem extends EntityReferenceItem {
        natcasesort($display_options);
      }
  
