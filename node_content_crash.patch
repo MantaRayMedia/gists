@@ -1,0 +1,112 @@
+diff --git a/config/filtering/display_filters.yml b/config/filtering/display_filters.yml
+new file mode 100644
+index 0000000..d5eef68
+--- /dev/null
++++ b/config/filtering/display_filters.yml
+@@ -0,0 +1,22 @@
++allowed_types:
++  #entry per CT, NO default on purpose! It might crash the server if a default value contains wrong items
++  person:
++    - Main
++    - Image
++    - Profile links
++
++  peer_reviewed_article:
++    - Main
++    - Details
++
++  resource:
++    - Main
++    - Details
++
++  front: {}
++  page: {}
++  event: {}
++  news: {}
++  organisation: {}
++  system: {}
++  blog: {}
+diff --git a/src/Plugin/Field/FieldType/ViewfieldItem.php b/src/Plugin/Field/FieldType/ViewfieldItem.php
+index d3a3813..45a2fd1 100644
+--- a/src/Plugin/Field/FieldType/ViewfieldItem.php
++++ b/src/Plugin/Field/FieldType/ViewfieldItem.php
+@@ -2,14 +2,21 @@
+ 
+ namespace Drupal\viewfield\Plugin\Field\FieldType;
+ 
++use Drupal;
+ use Drupal\Core\Entity\ContentEntityStorageInterface;
+ use Drupal\Core\Field\Plugin\Field\FieldType\EntityReferenceItem;
+ use Drupal\Core\Field\FieldStorageDefinitionInterface;
+ use Drupal\Core\Field\FieldDefinitionInterface;
+ use Drupal\Core\Form\FormStateInterface;
++use Drupal\Core\TypedData\ComplexDataDefinitionInterface;
+ use Drupal\Core\TypedData\DataDefinition;
+ use Drupal\Core\Field\FieldFilteredMarkup;
++use Drupal\Core\TypedData\TypedDataInterface;
++use Drupal\node\Entity\Node;
++use Drupal\node\Entity\NodeType;
+ use Drupal\views\Views;
++use Symfony\Component\Yaml\Exception\ParseException;
++use Symfony\Component\Yaml\Yaml;
+ 
+ /**
+  * Plugin implementation of the 'viewfield' field type.
+@@ -26,6 +33,18 @@ use Drupal\views\Views;
+  */
+ class ViewfieldItem extends EntityReferenceItem {
+ 
++  private const YML_PATH = __DIR__ . '/../../../../config/filtering/display_filters.yml';
++
++  private string $ymlFilePath ;
++
++
++  public function __construct(ComplexDataDefinitionInterface $definition, $name = NULL, TypedDataInterface $parent = NULL)
++  {
++    parent::__construct($definition, $name, $parent);
++    $this->ymlFilePath = Drupal::service('file_system')->realpath(self::YML_PATH);
++
++  }
++
+   /**
+    * {@inheritdoc}
+    */
+@@ -216,6 +235,38 @@ class ViewfieldItem extends EntityReferenceItem {
+       natcasesort($display_options);
+     }
+ 
++    // only filter for node content nugget
++    if($entity_id !== 'node_content') {
++      return $display_options;
++    }
++
++    // filter the options based off the YAML file
++    $node = Drupal::routeMatch()->getParameter('node');
++    $nodeType = Drupal::routeMatch()->getParameter('node_type');
++    $bundle = null;
++
++    if($node instanceof Node) {
++      $bundle = $node->bundle();
++    } else if($nodeType instanceof NodeType) {
++      $bundle = $nodeType->get('type');
++    }
++
++    // if creating or adding a node
++    if(isset($bundle)) {
++      try {
++        $yml = Yaml::parseFile($this->ymlFilePath);
++
++      } catch(ParseException $e) {
++        Drupal::logger('mrm')->error("Couldn't load YAML file from @path.", ['@path' => $this->ymlFilePath ?: self::YML_PATH]);
++        $yml = [];
++      }
++
++      // filter out items not in the allowlist
++      $allowlist = array_map('strtolower', $yml['allowed_types'][$bundle] ?? []);
++      $display_options = array_filter($display_options ?? [], fn($x) => in_array(strtolower((string) $x), $allowlist));
++    }
++
++
+     return $display_options;
+   }
+ 
