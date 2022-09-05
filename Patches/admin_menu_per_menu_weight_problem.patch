@@ -1,0 +1,26 @@
+diff --git a/menu_admin_per_menu.module b/menu_admin_per_menu.module
+index 581c09b..2794789 100644
+--- a/menu_admin_per_menu.module
++++ b/menu_admin_per_menu.module
+@@ -11,6 +11,21 @@ use Drupal\Core\Session\AccountInterface;
+ use Drupal\Core\Url;
+ use Drupal\system\Entity\Menu;
+ 
++
++function menu_admin_per_menu_module_implements_alter(&$implementations, $hook) {
++  if (isset($implementations['menu_admin_per_menu'])) {
++
++    // Move my_module_form_alter() to the end of the list.
++    // \Drupal::moduleHandler()->getImplementations()
++    // iterates through $implementations with a foreach loop which PHP iterates
++    // in the order that the items were added, so to move an item to the end of
++    // the array, we remove it and then add it.
++    $group = $implementations['menu_admin_per_menu'];
++    unset($implementations['menu_admin_per_menu']);
++    $implementations['menu_admin_per_menu'] = $group;
++  }
++}
++
+ /**
+  * Implements hook_form_ID_alter() for 'menu_link_content_form'.
+  *

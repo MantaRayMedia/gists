@@ -5,6 +5,7 @@ Because we can't create gists for the organisation
 | File                               | Description                                      | Link                                                                                              |
 |------------------------------------|--------------------------------------------------|---------------------------------------------------------------------------------------------------|
 | `Block.md`                         | Render custom and plugin blocks                  | [open](https://github.com/MantaRayMedia/gists/blob/master/Block.md)                               |
+| `Commands.md`                    | Useful commands to streamline setting up your local environemnt | [open](https://github.com/MantaRayMedia/gists/blob/master/Lando/Commands.md)    |
 | `Config.md`                        | Get Drupal config, Update Drupal config          | [open](https://github.com/MantaRayMedia/gists/blob/master/Config.md)                              |
 | `D7 modules via DB.md`             | Modules enable/disable via DB                    | [open](https://github.com/MantaRayMedia/gists/blob/master/D7%20modules%20via%20DB.md)             |
 | `DB and queries.md`                | Basic database interaction                       | [open](https://github.com/MantaRayMedia/gists/blob/master/DB%20and%20queries.md)                  |
@@ -25,6 +26,7 @@ Because we can't create gists for the organisation
 | `View.md`                          | Get, render the views                            | [open](https://github.com/MantaRayMedia/gists/blob/master/View.md)                                |
 
 
+
 ## Code examples:
 | File                                         | Description                                                                                 | Link                                                                                                       |
 |----------------------------------------------|---------------------------------------------------------------------------------------------|------------------------------------------------------------------------------------------------------------|
@@ -42,7 +44,9 @@ Because we can't create gists for the organisation
 ## Patches:
 | Title                                               | Description                                                                                    | Link                                                                                                                              |
 |-----------------------------------------------------|------------------------------------------------------------------------------------------------|-----------------------------------------------------------------------------------------------------------------------------------|
+| Menu admin per menu weight issue                 | All hooks of module menu_admin_per_menu are programatically put last to execute since they need to be ran after menu_ui module hooks to work as expected                              | [open](https://github.com/MantaRayMedia/gists/blob/master/Patches/admin_menu_per_menu_weight_problem.patch)                                 |
 | Better exposed filters reset button                 | Removed hiding of reset button when there are no filters selected                              | [open](https://github.com/MantaRayMedia/gists/blob/master/Patches/always_show_reset_button.patch)                                 |
+| Bulk form actions default options                 | Added default option to select box                             | [open](https://raw.githubusercontent.com/MantaRayMedia/gists/master/Patches/bulk_field_default_option.patch)                                 |
 | Career change activities webform                    | Custom webform module override with calls for creation new career change activities in civicrm | [open](https://github.com/MantaRayMedia/gists/blob/master/Patches/create_career_change_activity_in_civicrm_on_field_change.patch) |
 | CiviCRM group roles sync                            | fix for sync between civiCRM and Drupal9                                                       | [open](https://github.com/MantaRayMedia/gists/blob/master/Patches/civicrm_group_roles_sync.patch)                                 |
 | CiviCRM member roles sync                           | fix for sync of member roles between civiCRM and Drupal9                                       | [open](https://github.com/MantaRayMedia/gists/blob/master/Patches/civicrm_member_roles_sync.patch)                                |
@@ -51,6 +55,7 @@ Because we can't create gists for the organisation
 | File module additional description helper on upload | Added description helpers for image sizes on upload                                            | [open](https://github.com/MantaRayMedia/gists/blob/master/Patches/image_file_description_helper.patch)                            |
 | Image widget crop messages                          | Added description helpers for image sizes on upload                                            | [open](https://github.com/MantaRayMedia/gists/blob/master/Patches/soft-limit-message.patch)                                       |
 | Miniorange SAML (SSO)                               | MRM patch fro SSO                                                                              | [open](https://github.com/MantaRayMedia/gists/blob/master/Patches/miniorange_saml_simplesamphp.patch)                             |
+| Node content                                        | Node content patch                                          | [open](https://github.com/MantaRayMedia/gists/blob/master/Patches/node_content_crash.patch)                                       |
 | Scoring matrix webform                              | Custom webform module override with call to scoring matrix recalculate                         | [open](https://github.com/MantaRayMedia/gists/blob/master/Patches/webform_call_custom_for_matrix_calculate.patch)                 |
 | Scoring matrix webform                              | Webform validation for application round                                                       | [open](https://github.com/MantaRayMedia/gists/blob/master/Patches/webform_validation-application-round.patch)                     |
 | Selective filter                                    | Ability to un-check last element                                                               | [open](https://github.com/MantaRayMedia/gists/blob/master/Patches/views_module_fix_for_selective_filter_uncheck_last.patch)       |
@@ -61,7 +66,7 @@ Because we can't create gists for the organisation
 |-------------------------|--------------------------------------------|------------------------------------------------------------------------------------------|
 | AWS help                | Various instructions for AWS               | [open](https://github.com/MantaRayMedia/gists/blob/master/Other/aws.md)                  |
 | Node and npm errors     | Help scripts about errors                  | [open](https://github.com/MantaRayMedia/gists/blob/master/Other/npm-errors.md)           |
-| Configuring Solr server | Instructions to get it working on any box  | [open](https://github.com/MantaRayMedia/gists/blob/master/Other/solr-configuration.md)   |
+| Configuring Solr on Lando | Instructions to get it working on any Lando box  | [open](https://github.com/MantaRayMedia/gists/blob/master/Other/solr-configuration.md)   |
 | Lando stuff             | Lando configurations                       | [open](https://github.com/MantaRayMedia/gists/blob/master/Lando.md)                      |
 | OpenVPN AWS             | Setting new users for VPN                  | [open](https://github.com/MantaRayMedia/gists/blob/master/OpenVPN.md)                    |
 | Sitemap cache warmer    | Rebuild cache for pages from sitemap       | [open](https://github.com/MantaRayMedia/gists/blob/master/Code/sitemap_cache_warmer.php) |
