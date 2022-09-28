@@ -1,0 +1,22 @@
+diff --git a/src/Form/FileDeleteForm.php b/src/Form/FileDeleteForm.php
+index 871d409..5fc6522 100644
+--- a/src/Form/FileDeleteForm.php
++++ b/src/Form/FileDeleteForm.php
+@@ -113,12 +113,12 @@ class FileDeleteForm extends ContentEntityConfirmFormBase {
+       return;
+     }
+ 
+-    // Mark the file for removal by file_cron().
+-    $this->entity->setTemporary();
+-    $this->entity->save();
++    $file_name = $this->entity->getFilename();
++    // delete file
++    $this->entity->delete();
+ 
+-    $this->messenger()->addMessage($this->t('The file %file_name has been marked for deletion.', [
+-      '%file_name' => $this->entity->getFilename(),
++    $this->messenger()->addMessage($this->t('The file %file_name has been deleted.', [
++      '%file_name' => $file_name,
+     ]));
+ 
+     $form_state->setRedirect('view.files.page_1');
