@@ -6,11 +6,11 @@ index adf8ade188..306f53d2c5 100644
        // remember settings.
        $display_id = ($this->display_handler->isDefaulted('filters')) ? 'default' : $this->current_display;
 
--      if (empty($this->exposed_input) && $session && !empty($_SESSION['views'][$this->storage->id()][$display_id])) {
+-      if (empty($this->exposed_input) && !empty($_SESSION['views'][$this->storage->id()][$display_id])) {
 -        $this->exposed_input = $_SESSION['views'][$this->storage->id()][$display_id];
 +      // Drupal 9.3 uses Symfony session instead of $_SESSION.
 +      $session = \Drupal::request()->getSession();
-+      if (empty($this->exposed_input) && !empty($session->get('views')[$this->storage->id()][$display_id])) {
++      if (empty($this->exposed_input) && $session && !empty($session->get('views')[$this->storage->id()][$display_id])) {
 +        $this->exposed_input = $session->get('views')[$this->storage->id()][$display_id];
        }
      }
