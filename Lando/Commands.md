@@ -34,7 +34,7 @@ function localise-drupal() {
     lando drush config:delete "smtp.settings" "smtp_username" -y
     lando drush config:delete "smtp.settings" "smtp_password" -y
 
-     set-users-pass $1
+    set-users-pass $1
 }
 ```
 
@@ -67,4 +67,30 @@ function set-users-pass() {
     done
 }
 
+```
+
+# DB Import 
+```bash
+# Import database and update smtp, mailhog and user passwords
+# Usage: db-import <database>
+function db-import() {
+  lando db-import $1
+  lando drush cr 
+  localise-drupal
+  lando drush cr
+}
+```
+
+# Local update
+```bash
+# Runs composer install, cim and update-db
+function lu() {
+  lando composer install
+  lando drush cr
+  lando drush cim -y
+  lando drush cr
+  lando drush updatedb -y
+  lando drush cr
+  lando ant
+}
 ```
