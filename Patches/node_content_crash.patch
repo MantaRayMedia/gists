@@ -3,7 +3,7 @@ new file mode 100644
 index 0000000..d5eef68
 --- /dev/null
 +++ b/config/filtering/display_filters.yml
-@@ -0,0 +1,41 @@
+@@ -0,0 +1,42 @@
 +allowed_types:
 +  #entry per CT, NO default on purpose! It might crash the server if a default value contains wrong items
 +  person:
