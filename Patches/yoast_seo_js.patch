@@ -1,0 +1,85 @@
+diff --git a/js/yoast_seo.js b/js/yoast_seo.js
+index 1a9059b..ab7caee 100644
+--- a/js/yoast_seo.js
++++ b/js/yoast_seo.js
+@@ -17,6 +17,10 @@
+         var yoast_settings = settings.yoast_seo;
+         // Making sure we only initiate Yoast SEO once.
+         once('yoast_seo', 'body', context).forEach(function () {
++          yoast_settings.default_text = yoast_settings.default_text || {};
++          yoast_settings.fields = yoast_settings.fields || {};
++          yoast_settings.placeholder_text = yoast_settings.placeholder_text || {};
++
+           YoastSEO.analyzerArgs = {
+             source: YoastSEO_DrupalSource,
+             analyzer: yoast_settings.analyzer,
+@@ -40,27 +44,27 @@
+             },
+             sampleText: {
+               baseUrl: yoast_settings.base_root + '/',
+-              title: yoast_settings.default_text.meta_title,
+-              meta: yoast_settings.default_text.meta_description,
+-              keyword: yoast_settings.default_text.keyword,
+-              text: yoast_settings.default_text.body
++              title: yoast_settings.default_text.meta_title || '',
++              meta: yoast_settings.default_text.meta_description || '',
++              keyword: yoast_settings.default_text.keyword || '',
++              text: yoast_settings.default_text.body || ''
+             },
+             fields: {
+-              keyword: yoast_settings.fields.focus_keyword,
+-              title: yoast_settings.fields.meta_title,
+-              nodeTitle: yoast_settings.fields.title,
+-              meta: yoast_settings.fields.meta_description,
+-              text: yoast_settings.fields.body,
+-              url: yoast_settings.fields.path,
+-              summary: yoast_settings.fields.summary
++              keyword: yoast_settings.fields.focus_keyword || '',
++              title: yoast_settings.fields.meta_title || '',
++              nodeTitle: yoast_settings.fields.title || '',
++              meta: yoast_settings.fields.meta_description || '',
++              text: yoast_settings.fields.body || '',
++              url: yoast_settings.fields.path || '',
++              summary: yoast_settings.fields.summary || ''
+             },
+             placeholderText: {
+-              title: yoast_settings.placeholder_text.snippetTitle,
+-              description: yoast_settings.placeholder_text.snippetMeta,
+-              url: yoast_settings.placeholder_text.snippetCite
++              title: yoast_settings.placeholder_text.snippetTitle || '',
++              description: yoast_settings.placeholder_text.snippetMeta || '',
++              url: yoast_settings.placeholder_text.snippetCite || ''
+             },
+             SEOTitleOverwritten: yoast_settings.seo_title_overwritten,
+-            scoreElement: yoast_settings.fields.seo_status,
++            scoreElement: yoast_settings.fields.seo_status || '',
+             baseRoot: yoast_settings.base_root
+           };
+           // Create a new Yoast SEO instance.
+@@ -198,7 +202,8 @@ YoastSEO_DrupalSource.prototype.getDataFromInput = function (field) {
+     }
+     value = output.join("\n");
+   } else {
+-    value = document.getElementById(this.config.fields[field]).value;
++    const dom_field = document.getElementById(this.config.fields[field]) || {};
++    value = dom_field.value || '';
+   }
+ 
+   return this.tokenReplace(value);
+@@ -366,7 +371,10 @@ YoastSEO_DrupalSource.prototype.saveScores = function (score) {
+   }
+ 
+   document.getElementById(this.config.targets.overall).getElementsByClassName("score_value")[0].innerHTML = this.scoreRating(rating);
+-  document.querySelector('[data-drupal-selector="' + this.config.scoreElement + '"]').setAttribute('value', rating);
++  let dom_rating = document.querySelector('[data-drupal-selector="' + this.config.scoreElement + '"]');
++  if (dom_rating && dom_rating.length) {
++    dom_rating.setAttribute('value', rating);
++  }
+ };
+ 
+ /**
+@@ -437,3 +445,4 @@ YoastSEO_DrupalSource.prototype.tokenReplace = function (value) {
+   
+   return value;
+ };
++
