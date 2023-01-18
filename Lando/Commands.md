@@ -12,29 +12,54 @@ This command depends on [Updating all users' password](https://github.com/MantaR
 # Updates the smtp config
 # Changes all user passwords to the one provided, or cheese if none provided
 #
+# Requires localise-solr and localise-mail
+#
 # Usage: localise-drupal [user-password]
 function localise-drupal() {
-    SEARCH_API_INSTALLED=$([ $(lando drush pm:list --type=module --status=enabled --no-core --fields=name | grep "search_api" | wc -l) -ne 0 ])
-
-    if [ $(lando drush pm:list --type=module --status=enabled --no-core --fields=name | grep "search_api" | wc -l) -ne 0 ]; then
-      echo "SOLR installed"
-
-      SEARCH_API_SERVER=$(lando drush search-api:server-list | grep -i "solr" | awk '{print $1;}')
-      SEARCH_API_CORE=$(lando info --format=json | jq '.[].core' | grep -v "null" | tr -d '"')
-      SEARCH_API_CONFIG_KEY="search_api.server.$SEARCH_API_SERVER"
-      SEARCH_API_BASE_KEY="backend_config.connector_config"
-
-      lando drush config:set $SEARCH_API_CONFIG_KEY "$SEARCH_API_BASE_KEY.host" "search" -y
-      lando drush config:set $SEARCH_API_CONFIG_KEY "$SEARCH_API_BASE_KEY.core" $SEARCH_API_CORE -y
-      lando drush config:set $SEARCH_API_CONFIG_KEY "$SEARCH_API_BASE_KEY.path" "/" -y
-    ;fi;
-
-    lando drush config:set "smtp.settings" "smtp_host" "mailhog" -y
-    lando drush config:set "smtp.settings" "smtp_port" "1025" -y
-    lando drush config:delete "smtp.settings" "smtp_username" -y
-    lando drush config:delete "smtp.settings" "smtp_password" -y
-
+    localise-solr 
+    localise-mail
     set-users-pass $1
+}
+```
+
+## Localising solr
+
+```bash
+# Make the solr config safe for local development and indexes all items
+#
+# Usage localise-solr
+localise-solr () {
+	if [ $(lando drush pm:list --type=module --status=enabled --no-core --fields=name | grep "search_api" | wc -l) -ne 0 ]
+	then
+		echo "SOLR installed"
+		SEARCH_API_SERVER=$(lando drush search-api:server-list | grep -i "solr" | awk '{print $1;}') 
+		SEARCH_API_CORE=$(lando info --format=json | jq '.[].core' | grep -v "null" | tr -d '"') 
+		SEARCH_API_CONFIG_KEY="search_api.server.$SEARCH_API_SERVER" 
+		SEARCH_API_BASE_KEY="backend_config.connector_config" 
+		lando drush config:set $SEARCH_API_CONFIG_KEY "$SEARCH_API_BASE_KEY.host" "search" -y
+		lando drush config:set $SEARCH_API_CONFIG_KEY "$SEARCH_API_BASE_KEY.core" $SEARCH_API_CORE -y
+		lando drush config:set $SEARCH_API_CONFIG_KEY "$SEARCH_API_BASE_KEY.path" "/" -y
+		lando drush search-api:reset-tracker
+		lando drush search-api:index
+	fi
+}
+```
+
+## Localising mail
+
+```bash
+# Make the mail config safe for local development and sends a test email
+#
+# Usage localise-solr
+localise-mail () {
+	lando drush config:set "smtp.settings" "smtp_on" "true" -y
+	lando drush config:set "smtp.settings" "smtp_host" "mailhog" -y
+	lando drush config:set "smtp.settings" "smtp_port" "1025" -y
+	lando drush config:set "smtp.settings" "smtp_protocol" "standard" -y
+	lando drush config:delete "smtp.settings" "smtp_username" -y
+	lando drush config:delete "smtp.settings" "smtp_password" -y
+	lando drush php:eval "mail('support@mantaraymedia.co.uk', 'Localised email settings', 'Hello mailhog :)', 'From: support@mantaraymedia.co.uk');"
+	echo "Sent test email"
 }
 ```
 
