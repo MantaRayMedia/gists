@@ -1,0 +1,20 @@
+diff --git a/image_widget_crop.install b/image_widget_crop.install
+index 4026ecd..02091a2 100644
+--- a/image_widget_crop.install
++++ b/image_widget_crop.install
+@@ -20,7 +20,9 @@ function image_widget_crop_requirements($phase) {
+     ];
+ 
+     foreach ($files as $type => $file) {
+-      $is_local = !empty($file) && parse_url($file, PHP_URL_SCHEME) === NULL && strpos($file, '//') !== 0;
++      // fix deprecation for php8
++      $file = $file ?? '';
++      $is_local = parse_url($file, PHP_URL_SCHEME) === NULL && strpos($file, '//') !== 0;
+       // If libraries module is active check if folder is malformed.
+       if ($is_local
+         && \Drupal::moduleHandler()->moduleExists('libraries')
+@@ -64,3 +66,4 @@ function image_widget_crop_update_8001() {
+     ->set('settings.notify_apply', FALSE)
+     ->save();
+ }
++
