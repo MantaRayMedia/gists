@@ -1,6 +1,21 @@
 # Lando commands
 Some commands to help manage your local Lando environment
 
+# Update lando
+## Ubuntu
+Command will automatically grab the latest version of lando and install it.
+
+```
+lando-update () {
+        lando poweroff
+        sudo systemctl stop docker
+        local TEMP_DEB="$(mktemp)" 
+        wget -O "$TEMP_DEB" "https://files.lando.dev/installer/lando-x64-stable.deb"
+        sudo dpkg -i "$TEMP_DEB"
+        sudo systemctl start docker
+}
+```
+
 # Changing settings for local
 Updates the SMTP host and port so emails won't go out when copying the dev DB  
 Updates all user passwords to the defined password or cheese if unspecified  

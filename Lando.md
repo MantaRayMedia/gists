@@ -47,3 +47,6 @@ if you get an error `Your github oauth token for github.com contains invalid cha
 2. rm /var/www/.composer/auth.json
 3. exit
 4. try again
+
+## More commands
+https://github.com/MantaRayMedia/gists/blob/master/Lando/Commands.md
