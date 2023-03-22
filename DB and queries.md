@@ -58,3 +58,50 @@ $query = \Drupal::database()->delete('my_table');
 $query->condition('created', 1577836800, '<');
 $query->execute();
 ```
+### entityQuery: filter by condition by entity relations
+```
+    $query = Drupal::entityQuery('node')
+      ->condition('type', 'survey')
+      ->condition('status', 1);
+
+    if ($this->getArgs($input)->get('gbd_region')) {
+      $query->condition('field_country_tr.entity.field_gbd_region.entity.tid', $this->getArgs($input)->get('gbd_region'));
+      //node ids will be returned
+    } elseif ($this->getArgs($input)->get('gbd_super_region')) {
+      $query->condition('field_country_tr.entity.field_gbd_region.entity.field_super_region.entity.tid', $this->getArgs($input)->get('gbd_super_region'));
+    }
+
+    $nodeIDs = $query->execute();
+
+    if (!$nodeIDs) {
+      throw new NotFoundError();
+    }
+
+    /** @var Node[] $surveys */
+    $surveys = Drupal::entityTypeManager()->getStorage('node')->loadByProperties([
+      'nid' => $nodeIDs,
+    ]);
+```
+
+### entityQuery: filter by condition by entity relations (by using the repositories)
+```
+    $condition = [
+      'status' => 1,
+    ];
+
+    if ($this->getArgs($input)->get('gbd_region')) {
+
+      $condition['field_country_tr.entity.field_gbd_region.entity.tid'] = $this->getArgs($input)->get('gbd_region');
+
+    } elseif ($this->getArgs($input)->get('gbd_super_region')) {
+
+      $condition['field_country_tr.entity.field_gbd_region.entity.field_super_region.entity.tid'] = $this->getArgs($input)->get('gbd_super_region');
+
+    }
+    $allSurveyNodes = $this->surveyRepository->findBy($condition);
+
+    if (!$allSurveyNodes) {
+      throw new NotFoundError();
+    }
+    return $allSurveyNodes;
+```
