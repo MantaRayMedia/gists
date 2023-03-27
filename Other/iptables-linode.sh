@@ -45,3 +45,6 @@ ip6tables -A OUTPUT -p udp -j DROP
 # block ping
 iptables -A OUTPUT -p icmp --icmp-type echo-request -j DROP
 iptables -A INPUT -p icmp --icmp-type echo-request -j REJECT
+
+# allow ssh for outgoing -> git
+iptables -A OUTPUT -p tcp -m tcp --dport 22 -j ACCEPT
