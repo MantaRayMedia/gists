@@ -30,6 +30,9 @@ iptables -A INPUT -p tcp -m tcp -s 0.0.0.0/0 --dport 22 -j DROP
 # allow SOLR from IP only
 iptables -A INPUT -p tcp -m tcp -s 54.171.219.153 --dport 8099 -j ACCEPT
 iptables -A INPUT -p tcp -m tcp -s 0.0.0.0/0 --dport 8099 -j DROP
+iptables -A INPUT -p tcp -m tcp -s 54.171.219.153 --dport 8983 -j ACCEPT
+iptables -A INPUT -p tcp -m tcp -s 0.0.0.0/0 --dport 8983 -j DROP
+
 
 # allow udp only on port 53
 iptables -A OUTPUT -p udp --dport 53 -j ACCEPT
