@@ -48,3 +48,6 @@ iptables -A INPUT -p icmp --icmp-type echo-request -j REJECT
 
 # allow ssh for outgoing -> git
 iptables -A OUTPUT -p tcp -m tcp --dport 22 -j ACCEPT
+
+# allow smtp for mails
+iptables -A OUTPUT -p tcp --dport 587 -j ACCEPT
