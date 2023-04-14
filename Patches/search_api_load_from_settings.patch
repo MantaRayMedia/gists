@@ -25,11 +25,9 @@ index 1cc5820d..9a604771 100644
     */
    public function getBackendConfig() {
 +    // read configuration from settings
-+    if ($this->backend === 'search_api_solr') {
-+      $settings = Settings::get('search_api_solr', []);
-+      $settings = isset($settings[$this->id]) ? $settings[$this->id] : [];
-+      $this->backend_config["connector_config"] = array_merge($this->backend_config["connector_config"], $settings);
-+    }
++    $settings = Settings::get($this->backend, []);
++    $settings = isset($settings[$this->id]) ? $settings[$this->id] : [];
++    $this->backend_config["connector_config"] = array_merge($this->backend_config["connector_config"], $settings);
 +
      return $this->backend_config;
    }
@@ -49,9 +47,7 @@ index 1cc5820d..9a604771 100644
 +    $server = $storage->load($id);
 +
 +    // update data from settings if exists
-+    if ($server->getBackend()->getPluginId() === 'search_api_solr') {
-+      $server->setBackendConfig($server->getBackendConfig());
-+    }
++    $server->setBackendConfig($server->getBackendConfig());
 +
 +    return $server;
 +  }
