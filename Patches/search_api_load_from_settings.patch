@@ -1,0 +1,59 @@
+diff --git a/src/Entity/Server.php b/src/Entity/Server.php
+index 1cc5820d..9a604771 100644
+--- a/src/Entity/Server.php
++++ b/src/Entity/Server.php
+@@ -5,6 +5,7 @@ namespace Drupal\search_api\Entity;
+ use Drupal\Core\Cache\Cache;
+ use Drupal\Core\Config\Entity\ConfigEntityBase;
+ use Drupal\Core\Entity\EntityStorageInterface;
++use Drupal\Core\Site\Settings;
+ use Drupal\search_api\Event\DeterminingServerFeaturesEvent;
+ use Drupal\search_api\Event\SearchApiEvents;
+ use Drupal\search_api\IndexInterface;
+@@ -144,6 +145,9 @@ class Server extends ConfigEntityBase implements ServerInterface {
+   public function getBackend() {
+     if (!$this->backendPlugin) {
+       $backend_plugin_manager = \Drupal::service('plugin.manager.search_api.backend');
++      // call getBackendConfig to override from settings if exists!
++      $this->getBackendConfig();
++
+       $config = $this->backend_config;
+       $config['#server'] = $this;
+       if (!($this->backendPlugin = $backend_plugin_manager->createInstance($this->getBackendId(), $config))) {
+@@ -159,6 +163,13 @@ class Server extends ConfigEntityBase implements ServerInterface {
+    * {@inheritdoc}
+    */
+   public function getBackendConfig() {
++    // read configuration from settings
++    if ($this->backend === 'search_api_solr') {
++      $settings = Settings::get('search_api_solr', []);
++      $settings = isset($settings[$this->id]) ? $settings[$this->id] : [];
++      $this->backend_config["connector_config"] = array_merge($this->backend_config["connector_config"], $settings);
++    }
++
+     return $this->backend_config;
+   }
+ 
+@@ -615,4 +626,22 @@ class Server extends ConfigEntityBase implements ServerInterface {
+     $this->backendPlugin = NULL;
+   }
+ 
++  /**
++   * overriden for config update :)
++   * {@inheritdoc}
++   */
++  public static function load($id) {
++    $entity_type_repository = \Drupal::service('entity_type.repository');
++    $entity_type_manager = \Drupal::entityTypeManager();
++    $storage = $entity_type_manager->getStorage($entity_type_repository->getEntityTypeFromClass(static::class));
++    $server = $storage->load($id);
++
++    // update data from settings if exists
++    if ($server->getBackend()->getPluginId() === 'search_api_solr') {
++      $server->setBackendConfig($server->getBackendConfig());
++    }
++
++    return $server;
++  }
+ }
++
