@@ -1,4 +1,4 @@
-# SSh on Lando
+# SSL on Lando
 
 1. remove `lndo.site.*` from `/.lando/certs` folder
 2. run `docker rm -f landoproxyhyperion5000gandalfedition_proxy_1`
