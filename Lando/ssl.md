@@ -1,6 +1,6 @@
 # SSL on Lando
 
-1. remove `lndo.site.*` from `/.lando/certs` folder
+1. remove `lndo.site.*` from `~/.lando/certs` folder
 2. run `docker rm -f landoproxyhyperion5000gandalfedition_proxy_1`
 3. next run `lando rebuild -y` and with boxes also the NEW certificate will be generated
 4. import cert as defined per OS:
