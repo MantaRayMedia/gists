@@ -2,7 +2,7 @@ diff --git a/js/google_analytics.debug.js b/js/google_analytics.debug.js
 index 2df140a..9ba404f 100644
 --- a/js/google_analytics.debug.js
 +++ b/js/google_analytics.debug.js
-@@ -13,6 +13,24 @@
+@@ -13,6 +13,26 @@
  
    $(document).ready(function () {
  
@@ -17,7 +17,9 @@ index 2df140a..9ba404f 100644
 +          sendPageView(Drupal);
 +        }
 +
-+        ga("send", "pageview");
++        if(typeof ga === 'function') {
++          ga("send", "pageview");
++        }
 +      }
 +
 +      Drupal.eu_cookie_compliance('postPreferencesLoad', postPreferencesLoadHandler);
@@ -31,7 +33,7 @@ diff --git a/js/google_analytics.js b/js/google_analytics.js
 index 82b46cf..ebb883e 100644
 --- a/js/google_analytics.js
 +++ b/js/google_analytics.js
-@@ -13,6 +13,24 @@
+@@ -13,6 +13,26 @@
  
    $(document).ready(function () {
  
@@ -46,7 +48,9 @@ index 82b46cf..ebb883e 100644
 +          sendPageView(Drupal);
 +        }
 +
-+        ga("send", "pageview");
++        if(typeof ga === 'function') {
++          ga("send", "pageview");
++        }
 +      }
 +
 +      Drupal.eu_cookie_compliance('postPreferencesLoad', postPreferencesLoadHandler);
