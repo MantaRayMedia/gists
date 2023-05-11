@@ -1,0 +1,13 @@
+diff --git a/src/Utility/Utility.php b/src/Utility/Utility.php
+index 25a10498..fa5a6825 100644
+--- a/src/Utility/Utility.php
++++ b/src/Utility/Utility.php
+@@ -167,7 +167,7 @@ class Utility {
+     // Search for directories and recursively merge directory files.
+     $files_data = json_decode($response->getBody(), TRUE);
+     $files_list = $files_data['files'];
+-    $dir_length = strlen($dir_name) + 1;
++    $dir_length = strlen($dir_name ?? '') + 1;
+     $result = ['' => []];
+ 
+     foreach ($files_list as $file_name => $file_info) {
