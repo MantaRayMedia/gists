@@ -1,8 +1,8 @@
 diff --git a/image_widget_crop.install b/image_widget_crop.install
-index 4026ecd..76f4e57 100644
+index 4026ecd..0ba1e90 100644
 --- a/image_widget_crop.install
 +++ b/image_widget_crop.install
-@@ -15,8 +15,8 @@ function image_widget_crop_requirements($phase) {
+@@ -15,11 +15,12 @@ function image_widget_crop_requirements($phase) {
      $error = [];
      $config = \Drupal::config('image_widget_crop.settings');
      $files = [
@@ -11,5 +11,9 @@ index 4026ecd..76f4e57 100644
 +      'js' => $config->get('settings.library_url') ?? '',
 +      'css' => $config->get('settings.css_url') ?? '',
      ];
- 
+
      foreach ($files as $type => $file) {
++      $file = $file ?? '';
+       $is_local = !empty($file) && parse_url($file, PHP_URL_SCHEME) === NULL && strpos($file, '//') !== 0;
+       // If libraries module is active check if folder is malformed.
+       if ($is_local
