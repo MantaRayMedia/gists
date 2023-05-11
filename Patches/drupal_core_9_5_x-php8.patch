@@ -1,0 +1,13 @@
+diff --git a/core/modules/filter/src/Element/ProcessedText.php b/core/modules/filter/src/Element/ProcessedText.php
+index 8a05887fb0..b1effcfc30 100644
+--- a/core/modules/filter/src/Element/ProcessedText.php
++++ b/core/modules/filter/src/Element/ProcessedText.php
+@@ -66,7 +66,7 @@ public function getInfo() {
+   public static function preRenderText($element) {
+     $format_id = $element['#format'];
+     $filter_types_to_skip = $element['#filter_types_to_skip'];
+-    $text = $element['#text'];
++    $text = $element['#text'] ?? '';
+     $langcode = $element['#langcode'];
+ 
+     if (!isset($format_id)) {
