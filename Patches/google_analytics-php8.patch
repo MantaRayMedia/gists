@@ -1,0 +1,30 @@
+diff --git a/src/Helpers/GoogleAnalyticsAccounts.php b/src/Helpers/GoogleAnalyticsAccounts.php
+index 530dbcc..daefd58 100644
+--- a/src/Helpers/GoogleAnalyticsAccounts.php
++++ b/src/Helpers/GoogleAnalyticsAccounts.php
+@@ -43,15 +43,15 @@ class GoogleAnalyticsAccounts {
+   public function __construct(ConfigFactoryInterface $config_factory, PrivateKey $private_key) {
+     $this->config = $config_factory->get('google_analytics.settings');
+ 
+-    $accounts = $this->config->get('account');
++    $accounts = $this->config->get('account') ?? '';
+     // Create the accounts array from either a single gtag id or multiple ones.
+     if (strpos($accounts, ',') === FALSE) {
+-      $this->accounts[] = new GaAccount($accounts);
++      $this->accounts[] = new GaAccount($accounts ?? '');
+     }
+     else {
+       $accounts_array = explode(',', $accounts);
+       foreach($accounts_array as $account) {
+-        $this->accounts[] = new GaAccount($account);
++        $this->accounts[] = new GaAccount($account ?? '');
+       }
+     }
+ 
+@@ -109,4 +109,4 @@ class GoogleAnalyticsAccounts {
+   public function getAccounts() {
+     return $this->accounts;
+   }
+-}
+\ No newline at end of file
++}
