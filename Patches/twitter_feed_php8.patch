@@ -1,0 +1,21 @@
+diff --git a/src/Services/TweetService.php b/src/Services/TweetService.php
+index 5d3b602..fc84921 100644
+--- a/src/Services/TweetService.php
++++ b/src/Services/TweetService.php
+@@ -49,11 +49,11 @@ class TweetService
+     $this->twitterConfiguration = Drupal::config(TwitterSettingsForm::CONFIG_ID);
+     $this->screenName = $this->twitterConfiguration->get('screen_name');
+     $this->tweetCount = intval($this->twitterConfiguration->get('tweet_count'));
+-    $this->environment = trim($this->twitterConfiguration->get('environment_name'));
+-    $this->authData['oauth_access_token'] = trim($this->twitterConfiguration->get('oauth_access_token'));
+-    $this->authData['oauth_access_token_secret'] = trim($this->twitterConfiguration->get('oauth_access_token_secret'));
+-    $this->authData['consumer_key'] = trim($this->twitterConfiguration->get('consumer_key'));
+-    $this->authData['consumer_secret'] = trim($this->twitterConfiguration->get('consumer_secret'));
++    $this->environment = trim($this->twitterConfiguration->get('environment_name') ?? '');
++    $this->authData['oauth_access_token'] = trim($this->twitterConfiguration->get('oauth_access_token')) ?? '';
++    $this->authData['oauth_access_token_secret'] = trim($this->twitterConfiguration->get('oauth_access_token_secret') ?? '');
++    $this->authData['consumer_key'] = trim($this->twitterConfiguration->get('consumer_key') ?? '');
++    $this->authData['consumer_secret'] = trim($this->twitterConfiguration->get('consumer_secret') ?? '');
+   }
+ 
+   /**
