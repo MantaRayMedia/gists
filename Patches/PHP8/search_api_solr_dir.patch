@@ -1,0 +1,13 @@
+diff --git a/modules/contrib/search_api_solr/src/Utility/Utility.php b/modules/contrib/search_api_solr/src/Utility/Utility.php
+index edee266..13049d5 100644
+--- a/modules/contrib/search_api_solr/src/Utility/Utility.php
++++ b/modules/contrib/search_api_solr/src/Utility/Utility.php
+@@ -168,7 +168,7 @@ public static function getServerFiles(ServerInterface $server, $dir_name = NULL)
+     $files_data = json_decode($response->getBody(), TRUE);
+     $files_list = $files_data['files'];
+-    $dir_length = strlen($dir_name) + 1;
++    $dir_length = strlen($dir_name ?? '') + 1;
+     $result = ['' => []];
+ 
+     foreach ($files_list as $file_name => $file_info) {
+       // Annoyingly, Solr 4.7 changed the way the admin/file handler returns
