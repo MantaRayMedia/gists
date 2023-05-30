@@ -3,7 +3,7 @@ Some commands to help manage your local Lando environment
 
 # Update lando
 ## Ubuntu
-Command will automatically grab the latest version of lando and install it.
+Command will automatically grab the latest version of lando and installs it.
 
 ```
 lando-update () {
