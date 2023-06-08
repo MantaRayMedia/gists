@@ -1,0 +1,93 @@
+diff --git a/src/Plugin/content_synchronizer/entity_processor/FileProcessor.php b/src/Plugin/content_synchronizer/entity_processor/FileProcessor.php
+index b277668..46f163d 100644
+--- a/src/Plugin/content_synchronizer/entity_processor/FileProcessor.php
++++ b/src/Plugin/content_synchronizer/entity_processor/FileProcessor.php
+@@ -52,8 +52,8 @@ class FileProcessor extends EntityProcessorBase implements EntityProcessorInterf
+ 
+     $destination = $this->createDirTreeForFileDest(str_replace('://', '/', $file->getFileUri()), $assetsDir);
+ 
+-    // Copy file in destination directory.
+-    file_copy($file, $destination);
++    // we don't want this functionality cause we will sync files from aws s3
++    // file_copy($file, $destination);
+   }
+ 
+   /**
+@@ -92,24 +92,8 @@ class FileProcessor extends EntityProcessorBase implements EntityProcessorInterf
+    */
+   public function getEntityToImport(array $data, EntityInterface $entityToImport = NULL) {
+     if ($file = parent::getEntityToImport($data, $entityToImport)) {
+-      $assetsFile = $this->getImportAssetsDir() . '/' . str_replace('://', '/', $file->getFileUri());
+-      if (file_exists($assetsFile)) {
+-
+-        if (strpos($file->getFileUri(), '://')) {
+-          list($root, $destination) = explode('://', $file->getFileUri());
+-          $root .= '://';
+-        }
+-        else {
+-          list($root, $destination) = [$file->getFileUri(), '/'];
+-        }
+-
+-        $this->createDirTreeForFileDest($destination, $root);
+-
+-        $result = copy($assetsFile, $file->getFileUri());
+-        if ($result) {
+-          return $file;
+-        }
+-      }
++      // cause we only want to sync files through aws ho ho
++      return $file;
+     }
+ 
+     return NULL;
+diff --git a/src/Plugin/content_synchronizer/type_processor/FileFieldItemListProcessor.php b/src/Plugin/content_synchronizer/type_processor/FileFieldItemListProcessor.php
+index 57ae07d..45e4252 100644
+--- a/src/Plugin/content_synchronizer/type_processor/FileFieldItemListProcessor.php
++++ b/src/Plugin/content_synchronizer/type_processor/FileFieldItemListProcessor.php
+@@ -56,6 +56,10 @@ class FileFieldItemListProcessor extends TypeProcessorBase {
+       $referenceField->removeItem(0);
+     }
+ 
++    if (!isset($data[$propertyId])){
++      return;
++    }
++
+     foreach ($data[$propertyId] as $fileItem) {
+       $fileGID = $fileItem[ExportEntityWriter::FIELD_GID];
+       if ($entityData = ImportProcessor::getCurrentImportProcessor()
+diff --git a/src/Processors/Entity/EntityProcessorBase.php b/src/Processors/Entity/EntityProcessorBase.php
+index 858c213..d68590c 100644
+--- a/src/Processors/Entity/EntityProcessorBase.php
++++ b/src/Processors/Entity/EntityProcessorBase.php
+@@ -470,10 +470,14 @@ class EntityProcessorBase extends PluginBase implements EntityProcessorInterface
+         $typeManager = \Drupal::entityTypeManager()->getDefinition($typeId);
+         $bundleKey = $typeManager->getKey('bundle');
+ 
+-        /** @var \Drupal\Core\Entity\EntityFieldManager $entityFieldManager */
+-        $entityFieldManager = \Drupal::service('entity_field.manager');
+-        $baseDefinitions = $entityFieldManager->getFieldDefinitions($typeId, $data[$bundleKey]);
+-        $createData = array_intersect_key($defaultData, $baseDefinitions);
++        // if no existing CT, it will still only create CT
++        $createData = $defaultData;
++        if (isset($data[$bundleKey])) {
++          /** @var \Drupal\Core\Entity\EntityFieldManager $entityFieldManager */
++          $entityFieldManager = \Drupal::service('entity_field.manager');
++          $baseDefinitions = $entityFieldManager->getFieldDefinitions($typeId, $data[$bundleKey]);
++          $createData = array_intersect_key($defaultData, $baseDefinitions);
++        }
+ 
+         $entityToImport = \Drupal::entityTypeManager()
+           ->getStorage($typeId)
+diff --git a/src/Processors/Type/DefaultTypeProcessor.php b/src/Processors/Type/DefaultTypeProcessor.php
+index 7bc1375..a4b7932 100644
+--- a/src/Processors/Type/DefaultTypeProcessor.php
++++ b/src/Processors/Type/DefaultTypeProcessor.php
+@@ -41,7 +41,7 @@ class DefaultTypeProcessor implements TypeProcessorInterface {
+    * {@inheritdoc}
+    */
+   public function initImportedEntity(EntityInterface $entityToImport, $propertyId, array $data) {
+-    $entityToImport->set($propertyId, $data[$propertyId]);
++    isset($data[$propertyId]) ?? $entityToImport->set($propertyId, $data[$propertyId]);
+   }
+ 
+ }
