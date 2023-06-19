@@ -18,10 +18,7 @@ function MODULE_NAME_update_8001()
   $types = \Drupal\node\Entity\NodeType::loadMultiple();
 
   // Create list of all content/paragraph types
-  $types_list = [];
-  foreach ($types as $machine_name => $type) {
-    $types_list[] = $machine_name;
-  }
+  $types_list = array_keys($types);
 
   // Loop through all content/paragraph types and get the field definitions
   foreach ($types_list as $type) {

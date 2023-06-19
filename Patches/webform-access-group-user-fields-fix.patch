@@ -1,0 +1,22 @@
+diff --git a/modules/webform_access/src/WebformAccessGroupForm.php b/modules/webform_access/src/WebformAccessGroupForm.php
+index f5c79649b..ca9bb4f9f 100644
+--- a/modules/webform_access/src/WebformAccessGroupForm.php
++++ b/modules/webform_access/src/WebformAccessGroupForm.php
+@@ -208,7 +208,7 @@ class WebformAccessGroupForm extends EntityForm {
+     ];
+     // Access: Users.
+     $form['access']['users'] = [
+-      '#type' => 'webform_entity_select',
++      '#type' => 'entity_autocomplete',
+       '#title' => $this->t('Users'),
+       '#description' => $this->t("Select which users can access this group's assigned nodes."),
+       '#target_type' => 'user',
+@@ -289,7 +289,7 @@ class WebformAccessGroupForm extends EntityForm {
+     ];
+     // Administration: Admins.
+     $form['administration']['admins'] = [
+-      '#type' => 'webform_entity_select',
++      '#type' => 'entity_autocomplete',
+       '#title' => $this->t('Administrators'),
+       '#description' => $this->t('Administrators will be able to add and remove users and custom email addresses from this group.') .
+         '<br/><br/>' .
