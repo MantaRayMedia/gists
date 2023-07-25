@@ -2,28 +2,28 @@
 Because we can't create gists for the organisation
 
 ## Start here with *little* help:
-| File                               | Description                                      | Link                                                                                              |
-|------------------------------------|--------------------------------------------------|---------------------------------------------------------------------------------------------------|
-| `Block.md`                         | Render custom and plugin blocks                  | [open](https://github.com/MantaRayMedia/gists/blob/master/Block.md)                               |
-| `Commands.md`                    | Useful commands to streamline setting up your local environemnt | [open](https://github.com/MantaRayMedia/gists/blob/master/Lando/Commands.md)    |
-| `Config.md`                        | Get Drupal config, Update Drupal config          | [open](https://github.com/MantaRayMedia/gists/blob/master/Config.md)                              |
-| `D7 modules via DB.md`             | Modules enable/disable via DB                    | [open](https://github.com/MantaRayMedia/gists/blob/master/D7%20modules%20via%20DB.md)             |
-| `DB and queries.md`                | Basic database interaction                       | [open](https://github.com/MantaRayMedia/gists/blob/master/DB%20and%20queries.md)                  |
-| `Debugging.md`                     | Dif ways of finding the little bugger :P         | [open](https://github.com/MantaRayMedia/gists/blob/master/Debugging.md)                           |
-| `Dependency injection.md`          | How to inject custom service                     | [open](https://github.com/MantaRayMedia/gists/blob/master/Dependency%20injection.md)              |
-| `Drupal 8 tips.md`                 | How to inject custom service                     | [open](https://github.com/MantaRayMedia/gists/blob/master/Drupal%208%20tips.md)                   |
-| `Drupal config sync exclusions.md` | Drupal items to exclude from config sync         | [open](https://github.com/MantaRayMedia/gists/blob/master/Drupal%20config%20sync%20exclusions.md) |
-| `Entity.md`                        | Entity manipulation                              | [open](https://github.com/MantaRayMedia/gists/blob/master/Entity.md)                              |
-| `Field.md`                         | Node Field manipulation                          | [open](https://github.com/MantaRayMedia/gists/blob/master/Field.md)                               |
-| `File.md`                          | File manipulation                                | [open](https://github.com/MantaRayMedia/gists/blob/master/File.md)                                |
-| `Form.md`                          | Create form structure for node                   | [open](https://github.com/MantaRayMedia/gists/blob/master/Form.md)                                |
-| `Image.md`                         | Get image with details                           | [open](https://github.com/MantaRayMedia/gists/blob/master/Image.md)                               |
-| `Misc.md`                          | Mixed functions and traits                       | [open](https://github.com/MantaRayMedia/gists/blob/master/Misc.md)                                |
-| `Request.md`                       | Request data in controller or .theme file        | [open](https://github.com/MantaRayMedia/gists/blob/master/Request.md)                             |
-| `Route.md`                         | Route specification for service, controller, ... | [open](https://github.com/MantaRayMedia/gists/blob/master/Route.md)                               |
-| `Url & Link.md`                    | Get, generate, update                            | [open](https://github.com/MantaRayMedia/gists/blob/master/Url%20%26%20Link.md)                    |
-| `User.md`                          | Get user and it's data                           | [open](https://github.com/MantaRayMedia/gists/blob/master/User.md)                                |
-| `View.md`                          | Get, render the views                            | [open](https://github.com/MantaRayMedia/gists/blob/master/View.md)                                |
+| File                               | Description                                                     | Link                                                                                              |
+|------------------------------------|-----------------------------------------------------------------|---------------------------------------------------------------------------------------------------|
+| `Block.md`                         | Render custom and plugin blocks                                 | [open](https://github.com/MantaRayMedia/gists/blob/master/Block.md)                               |
+| `Commands.md`                      | Useful commands to streamline setting up your local environemnt | [open](https://github.com/MantaRayMedia/gists/blob/master/Lando/Commands.md)                      |
+| `Config.md`                        | Get Drupal config, Update Drupal config                         | [open](https://github.com/MantaRayMedia/gists/blob/master/Config.md)                              |
+| `D7 modules via DB.md`             | Modules enable/disable via DB                                   | [open](https://github.com/MantaRayMedia/gists/blob/master/D7%20modules%20via%20DB.md)             |
+| `DB and queries.md`                | Basic database interaction                                      | [open](https://github.com/MantaRayMedia/gists/blob/master/DB%20and%20queries.md)                  |
+| `Debugging.md`                     | Dif ways of finding the little bugger :P                        | [open](https://github.com/MantaRayMedia/gists/blob/master/Debugging.md)                           |
+| `Dependency injection.md`          | How to inject custom service                                    | [open](https://github.com/MantaRayMedia/gists/blob/master/Dependency%20injection.md)              |
+| `Drupal 8 tips.md`                 | How to inject custom service                                    | [open](https://github.com/MantaRayMedia/gists/blob/master/Drupal%208%20tips.md)                   |
+| `Drupal config sync exclusions.md` | Drupal items to exclude from config sync                        | [open](https://github.com/MantaRayMedia/gists/blob/master/Drupal%20config%20sync%20exclusions.md) |
+| `Entity.md`                        | Entity manipulation                                             | [open](https://github.com/MantaRayMedia/gists/blob/master/Entity.md)                              |
+| `Field.md`                         | Node Field manipulation                                         | [open](https://github.com/MantaRayMedia/gists/blob/master/Field.md)                               |
+| `File.md`                          | File manipulation                                               | [open](https://github.com/MantaRayMedia/gists/blob/master/File.md)                                |
+| `Form.md`                          | Create form structure for node                                  | [open](https://github.com/MantaRayMedia/gists/blob/master/Form.md)                                |
+| `Image.md`                         | Get image with details                                          | [open](https://github.com/MantaRayMedia/gists/blob/master/Image.md)                               |
+| `Misc.md`                          | Mixed functions and traits                                      | [open](https://github.com/MantaRayMedia/gists/blob/master/Misc.md)                                |
+| `Request.md`                       | Request data in controller or .theme file                       | [open](https://github.com/MantaRayMedia/gists/blob/master/Request.md)                             |
+| `Route.md`                         | Route specification for service, controller, ...                | [open](https://github.com/MantaRayMedia/gists/blob/master/Route.md)                               |
+| `Url & Link.md`                    | Get, generate, update                                           | [open](https://github.com/MantaRayMedia/gists/blob/master/Url%20%26%20Link.md)                    |
+| `User.md`                          | Get user and it's data                                          | [open](https://github.com/MantaRayMedia/gists/blob/master/User.md)                                |
+| `View.md`                          | Get, render and alter the views                                 | [open](https://github.com/MantaRayMedia/gists/blob/master/View.md)                                |
 
 
 
@@ -67,16 +67,16 @@ Because we can't create gists for the organisation
 | Search API                                          | Read SOLR API configuration from settings if exists and override what's in DB                                                                            | [open](https://github.com/MantaRayMedia/gists/blob/master/Patches/search_api_load_from_settings.patch)                            |
 | Selective filter                                    | Ability to un-check last element                                                                                                                         | [open](https://github.com/MantaRayMedia/gists/blob/master/Patches/views_module_fix_for_selective_filter_uncheck_last.patch)       |
 | Selective filter                                    | Search API support                                                                                                                                       | [open](https://github.com/MantaRayMedia/gists/blob/master/Patches/views_selective_filters-search_api.patch)                       |
-| Search API Solr                                     | PHP 8.1 deprecation fixes                                                                                                                                | [open](https://github.com/MantaRayMedia/gists/blob/master/Patches/search_api_solr_4.2.0-php8.1_deprecation.patch)                       |
+| Search API Solr                                     | PHP 8.1 deprecation fixes                                                                                                                                | [open](https://github.com/MantaRayMedia/gists/blob/master/Patches/search_api_solr_4.2.0-php8.1_deprecation.patch)                 |
 
 ## Other:
-| Title                   | Description                                | Link                                                                                     |
-|-------------------------|--------------------------------------------|------------------------------------------------------------------------------------------|
-| AWS help                | Various instructions for AWS               | [open](https://github.com/MantaRayMedia/gists/blob/master/Other/aws.md)                  |
-| Node and npm errors     | Help scripts about errors                  | [open](https://github.com/MantaRayMedia/gists/blob/master/Other/npm-errors.md)           |
-| Configuring Solr on Lando | Instructions to get it working on any Lando box  | [open](https://github.com/MantaRayMedia/gists/blob/master/Other/solr-configuration.md)   |
-| Lando stuff             | Lando configurations                       | [open](https://github.com/MantaRayMedia/gists/blob/master/Lando.md)                      |
-| OpenVPN AWS             | Setting new users for VPN                  | [open](https://github.com/MantaRayMedia/gists/blob/master/OpenVPN.md)                    |
-| Sitemap cache warmer    | Rebuild cache for pages from sitemap       | [open](https://github.com/MantaRayMedia/gists/blob/master/Code/sitemap_cache_warmer.php) |
-| SSH on Lando            | Instructions to get it working on any box  | [open](https://github.com/MantaRayMedia/gists/blob/master/Lando/ssl.md)                  |
-| Setting up Remora       | An automated script to setup Remora9 sites | [open](https://github.com/MantaRayMedia/gists/blob/master/Remora8/Setup.md)              |
+| Title                     | Description                                     | Link                                                                                     |
+|---------------------------|-------------------------------------------------|------------------------------------------------------------------------------------------|
+| AWS help                  | Various instructions for AWS                    | [open](https://github.com/MantaRayMedia/gists/blob/master/Other/aws.md)                  |
+| Node and npm errors       | Help scripts about errors                       | [open](https://github.com/MantaRayMedia/gists/blob/master/Other/npm-errors.md)           |
+| Configuring Solr on Lando | Instructions to get it working on any Lando box | [open](https://github.com/MantaRayMedia/gists/blob/master/Other/solr-configuration.md)   |
+| Lando stuff               | Lando configurations                            | [open](https://github.com/MantaRayMedia/gists/blob/master/Lando.md)                      |
+| OpenVPN AWS               | Setting new users for VPN                       | [open](https://github.com/MantaRayMedia/gists/blob/master/OpenVPN.md)                    |
+| Sitemap cache warmer      | Rebuild cache for pages from sitemap            | [open](https://github.com/MantaRayMedia/gists/blob/master/Code/sitemap_cache_warmer.php) |
+| SSH on Lando              | Instructions to get it working on any box       | [open](https://github.com/MantaRayMedia/gists/blob/master/Lando/ssl.md)                  |
+| Setting up Remora         | An automated script to setup Remora9 sites      | [open](https://github.com/MantaRayMedia/gists/blob/master/Remora8/Setup.md)              |
