@@ -1,0 +1,33 @@
+diff --git a/modules/contrib/image_widget_crop/js/ImageWidgetCropType.js b/modules/contrib/image_widget_crop/js/ImageWidgetCropType.js
+index e3edb02..46a66be 100644
+--- a/modules/contrib/image_widget_crop/js/ImageWidgetCropType.js
++++ b/modules/contrib/image_widget_crop/js/ImageWidgetCropType.js
+@@ -768,9 +768,9 @@
+   Drupal.ImageWidgetCropType.prototype.toImageDimensions = function (x, y) {
+     var imageData = this.cropper.getImageData();
+     return {
+-      width: x * (this.originalWidth / imageData.width),
+-      height: y * (this.originalHeight / imageData.height)
+-    }
++      width: Math.ceil(x * (this.originalWidth / imageData.width)),
++      height: Math.ceil(y * (this.originalHeight / imageData.height))S
++    };
+   };
+ 
+   /**
+@@ -808,6 +808,7 @@
+ 
+     var dimensions = ['width', 'height'];
+     for (var i = 0, l = dimensions.length; i < l; i++) {
++
+       var dimension = dimensions[i];
+       if (converted[dimension] < this.softLimit[dimension]) {
+         if (!this.softLimit.reached[dimension]) {
+@@ -827,6 +828,7 @@
+    */
+   Drupal.ImageWidgetCropType.prototype.updateSummary = function () {
+     var summary = [];
++
+     if (this.getValue('applied')) {
+       summary.push(Drupal.t('Cropping applied.'));
+     }
