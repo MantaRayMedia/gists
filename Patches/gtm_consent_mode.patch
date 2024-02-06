@@ -1,0 +1,42 @@
+diff --git a/README.md b/README.md
+index a614d4a..3262962 100644
+--- a/README.md
++++ b/README.md
+@@ -31,3 +31,14 @@ category from `/admin/config/system/eu-cookie-compliance/categories`.
+ ## Support & Maintenance
+
+ For any issues or feature requests, please use the [issue tracker](https://www.drupal.org/project/issues/eu_cookie_compliance_gtm) of the project.
++
++## GTM consent mode (patched)
++
++This module does now comply with `GTM consent mode`. Configuration needed is in `admin/config/system/eu-cookie-compliance/categories`.
++- available and targeted `Consent modes` can be accessed [here](https://developers.google.com/tag-platform/tag-manager/templates/consent-apis)
++- an example of `Drupal analytics cookies` has to contain `GTM data`, where status is updated from `0/1` to `denied/granted` inside patch
++```json
++{
++    "analytics_storage": "@status"
++}
++```
+diff --git a/js/eu_cookie_compliance_hooks.js b/js/eu_cookie_compliance_hooks.js
+index 06c6aa2..6c7038a 100644
+--- a/js/eu_cookie_compliance_hooks.js
++++ b/js/eu_cookie_compliance_hooks.js
+@@ -74,14 +74,16 @@
+       if ('third_party_settings' in details[category]) {
+         for (let prop in details[category].third_party_settings.eu_cookie_compliance_gtm.gtm_data) {
+           let value = '' + details[category].third_party_settings.eu_cookie_compliance_gtm.gtm_data[prop];
+-          let status = (response.currentCategories.indexOf(category) > -1) ? "1" : "0";
++          let status = response.currentCategories.includes(category) ? "granted" : "denied";
+           data[prop] = _replaceTokens(response, value, {'@status': status});
+         }
+       }
+     }
+
+     window.dataLayer = window.dataLayer || [];
+-    window.dataLayer.push(data);
++
++    function gtag() { window.dataLayer.push(arguments); }
++    gtag('consent', 'default', data);
+   }
+
+   /**
