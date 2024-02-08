@@ -13,6 +13,7 @@ Because we can't create gists for the organisation
 | `Dependency injection.md`          | How to inject custom service                                    | [open](https://github.com/MantaRayMedia/gists/blob/master/Dependency%20injection.md)              |
 | `Drupal 8 tips.md`                 | How to inject custom service                                    | [open](https://github.com/MantaRayMedia/gists/blob/master/Drupal%208%20tips.md)                   |
 | `Drupal config sync exclusions.md` | Drupal items to exclude from config sync                        | [open](https://github.com/MantaRayMedia/gists/blob/master/Drupal%20config%20sync%20exclusions.md) |
+| `Drupal Mismatched entity.md`      | Script that fixes `Mismatched entity` in update hook            | [open](https://github.com/MantaRayMedia/gists/blob/master/Drupal%20mismatched%20entity.md)        |
 | `Entity.md`                        | Entity manipulation                                             | [open](https://github.com/MantaRayMedia/gists/blob/master/Entity.md)                              |
 | `Field.md`                         | Node Field manipulation                                         | [open](https://github.com/MantaRayMedia/gists/blob/master/Field.md)                               |
 | `File.md`                          | File manipulation                                               | [open](https://github.com/MantaRayMedia/gists/blob/master/File.md)                                |
@@ -40,6 +41,7 @@ Because we can't create gists for the organisation
 | `mrm-repo-version-scripts`                   | scripts to generate repository version files                                                | [open](https://github.com/MantaRayMedia/gists/blob/master/Code/mrm-repo-version-scripts/README.md)         |
 | `selective-filter-summary.js`                | Summary of selected exposed filters                                                         | [open](https://github.com/MantaRayMedia/gists/blob/master/Code/selective-filter-summary.js)                |
 | `view.html.twig`                             | Get value of rows in twig template D8                                                       | [open](https://github.com/MantaRayMedia/gists/blob/master/Code/view.html.twig)                             |
+
 
 ## Patches:
 | Title                                               | Description                                                                                                                                              | Link                                                                                                                              |
@@ -72,6 +74,7 @@ Because we can't create gists for the organisation
 | Selective filter                                    | Ability to un-check last element                                                                                                                         | [open](https://github.com/MantaRayMedia/gists/blob/master/Patches/views_module_fix_for_selective_filter_uncheck_last.patch)       |
 | Selective filter                                    | Search API support                                                                                                                                       | [open](https://github.com/MantaRayMedia/gists/blob/master/Patches/views_selective_filters-search_api.patch)                       |
 | Search API Solr                                     | PHP 8.1 deprecation fixes                                                                                                                                | [open](https://github.com/MantaRayMedia/gists/blob/master/Patches/search_api_solr_4.2.0-php8.1_deprecation.patch)                 |
+
 
 ## Other:
 | Title                     | Description                                     | Link                                                                                     |
