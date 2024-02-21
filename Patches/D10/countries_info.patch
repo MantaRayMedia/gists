@@ -1,0 +1,13 @@
+diff --git a/countries_info.info.yml b/countries_info.info.yml
+index 465c5a0..4245286 100644
+--- a/countries_info.info.yml
++++ b/countries_info.info.yml
+@@ -6,7 +6,7 @@ dependencies:
+   - drupal:taxonomy
+ package: Taxonomy
+ core: '8.x'
+-core_version_requirement: ^8 || ^9
++core_version_requirement: ^8 || ^9 || ^10
+
+ # Information added by Drupal.org packaging script on 2020-01-30
+ version: '8.x-1.2'
