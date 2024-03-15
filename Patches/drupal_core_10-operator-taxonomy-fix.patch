@@ -1,0 +1,13 @@
+diff --git a/core/modules/views/src/Plugin/views/argument/ArgumentPluginBase.php b/core/modules/views/src/Plugin/views/argument/ArgumentPluginBase.php
+index bbc33b438b..48e63d432d 100644
+--- a/core/modules/views/src/Plugin/views/argument/ArgumentPluginBase.php
++++ b/core/modules/views/src/Plugin/views/argument/ArgumentPluginBase.php
+@@ -1299,7 +1299,7 @@ public static function decodeValidatorId($id) {
+   protected function unpackArgumentValue($force_int = FALSE) {
+     $break = static::breakString($this->argument, $force_int);
+     $this->value = $break->value;
+-    $this->operator = $break->operator;
++    $this->operator = $break->operator ?? 'AND';
+   }
+ 
+   /**
