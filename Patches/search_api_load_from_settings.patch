@@ -27,7 +27,7 @@ index 1cc5820d..4778257f 100644
 +    // read configuration from settings
 +    $settings = Settings::get($this->backend, []);
 +    $settings = isset($settings[$this->id]) ? $settings[$this->id] : [];
-+    $this->backend_config["connector_config"] = array_merge($this->backend_config["connector_config"], $settings);
++    $this->backend_config["connector_config"] = array_merge($this->backend_config["connector_config"] ?? [], $settings);
 +
      return $this->backend_config;
    }
