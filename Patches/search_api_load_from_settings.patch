@@ -1,8 +1,8 @@
 diff --git a/src/Entity/Server.php b/src/Entity/Server.php
-index 1cc5820d..4778257f 100644
+index 1cc5820..3add02f 100644
 --- a/src/Entity/Server.php
 +++ b/src/Entity/Server.php
-@@ -5,6 +5,7 @@ namespace Drupal\search_api\Entity;
+@@ -5,6 +5,7 @@
  use Drupal\Core\Cache\Cache;
  use Drupal\Core\Config\Entity\ConfigEntityBase;
  use Drupal\Core\Entity\EntityStorageInterface;
@@ -10,7 +10,7 @@ index 1cc5820d..4778257f 100644
  use Drupal\search_api\Event\DeterminingServerFeaturesEvent;
  use Drupal\search_api\Event\SearchApiEvents;
  use Drupal\search_api\IndexInterface;
-@@ -144,6 +145,9 @@ class Server extends ConfigEntityBase implements ServerInterface {
+@@ -144,6 +145,9 @@ public function getBackendId() {
    public function getBackend() {
      if (!$this->backendPlugin) {
        $backend_plugin_manager = \Drupal::service('plugin.manager.search_api.backend');
@@ -20,10 +20,11 @@ index 1cc5820d..4778257f 100644
        $config = $this->backend_config;
        $config['#server'] = $this;
        if (!($this->backendPlugin = $backend_plugin_manager->createInstance($this->getBackendId(), $config))) {
-@@ -159,6 +163,11 @@ class Server extends ConfigEntityBase implements ServerInterface {
+@@ -159,6 +163,12 @@ public function getBackend() {
     * {@inheritdoc}
     */
    public function getBackendConfig() {
++
 +    // read configuration from settings
 +    $settings = Settings::get($this->backend, []);
 +    $settings = isset($settings[$this->id]) ? $settings[$this->id] : [];
@@ -32,7 +33,7 @@ index 1cc5820d..4778257f 100644
      return $this->backend_config;
    }
 
-@@ -615,4 +624,19 @@ class Server extends ConfigEntityBase implements ServerInterface {
+@@ -615,4 +625,19 @@ public function __clone() {
      $this->backendPlugin = NULL;
    }
 
