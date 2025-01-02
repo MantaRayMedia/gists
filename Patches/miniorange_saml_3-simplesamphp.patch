@@ -1,0 +1,453 @@
+diff --git a/miniorange_saml.links.menu.yml b/miniorange_saml.links.menu.yml
+index b169970..3c3bd77 100644
+--- a/miniorange_saml.links.menu.yml
++++ b/miniorange_saml.links.menu.yml
+@@ -4,12 +4,6 @@ miniorange_saml.test_configuration:
+ miniorange_saml.saml_login:
+   route_name: miniorange_saml.saml_login
+
+-miniorange_saml.customer_setup:
+-  route_name: miniorange_saml.customer_setup
+-  title: 'Register/Login'
+-  description: 'Register/Login Tab'
+-  parent: miniorange_saml.idp_setup
+-
+ miniorange_saml.idp_setup:
+   route_name: miniorange_saml.idp_setup
+   title: 'miniOrange SAML Login Configuration'
+@@ -39,10 +33,3 @@ miniorange_saml.advance_settings:
+   title: 'Advance Settings'
+   description: 'Advance Settings Tab'
+   parent: miniorange_saml.idp_setup
+-
+-miniorange_saml.licensing:
+-  route_name: miniorange_saml.licensing
+-  title: 'Upgrade Plans'
+-  description: 'Upgrade Plans Tab'
+-  parent: miniorange_saml.idp_setup
+-
+diff --git a/miniorange_saml.links.task.yml b/miniorange_saml.links.task.yml
+index 3b84e82..7da6fa5 100644
+--- a/miniorange_saml.links.task.yml
++++ b/miniorange_saml.links.task.yml
+@@ -27,15 +27,3 @@ miniorange_saml.advance_settings:
+   title: 'Advance Settings'
+   weight: 50
+   base_route: miniorange_saml.idp_setup
+-
+-miniorange_saml.licensing:
+-  route_name: miniorange_saml.licensing
+-  title: 'Upgrade Plans'
+-  weight: 60
+-  base_route: miniorange_saml.idp_setup
+-
+-miniorange_saml.customer_setup:
+-  route_name: miniorange_saml.customer_setup
+-  title: 'Register/Login'
+-  weight: 80
+-  base_route: miniorange_saml.idp_setup
+diff --git a/miniorange_saml.routing.yml b/miniorange_saml.routing.yml
+index 55fa5e4..7ed9381 100644
+--- a/miniorange_saml.routing.yml
++++ b/miniorange_saml.routing.yml
+@@ -1,7 +1,7 @@
+ miniorange_saml.customer_setup:
+   path: /admin/config/people/miniorange_saml/customer_setup
+   defaults:
+-    _title: 'miniOrange SAML  &nbsp;&nbsp;<a class="button button--primary js-form-submit mo_top_bar_button form-submit use-ajax" href="MiniorageSupport" data-dialog-type = "modal" data-dialog-options="{&quot;width&quot;:&quot;70%&quot;}" >Contact Us</a><a class="button button--primary js-form-submit mo_top_bar_button form-submit use-ajax" href="trial" data-dialog-type = "modal" data-dialog-options="{&quot;width&quot;:&quot;70%&quot;}" >Request 7-days Trial</a>'
++    _title: 'miniOrange SAML'
+     _form: \Drupal\miniorange_saml\Form\MiniorangeSamlCustomerSetup
+   requirements:
+     _permission: 'administer site configuration'
+@@ -9,7 +9,7 @@ miniorange_saml.customer_setup:
+ miniorange_saml.sp_setup:
+   path: /admin/config/people/miniorange_saml/sp_setup
+   defaults:
+-    _title: 'miniOrange SAML  &nbsp;&nbsp;<a id="contact_us_button" class="button button--primary js-form-submit mo_top_bar_button form-submit use-ajax" href="MiniorageSupport" data-dialog-type = "modal" data-dialog-options="{&quot;width&quot;:&quot;70%&quot;}" >Contact Us</a><a class="button button--primary js-form-submit mo_top_bar_button form-submit use-ajax" href="trial" data-dialog-type = "modal" data-dialog-options="{&quot;width&quot;:&quot;70%&quot;}" >Request 7-days Trial</a>'
++    _title: 'miniOrange SAML'
+     _form: \Drupal\miniorange_saml\Form\MiniorangeSPInformation
+   requirements:
+     _permission: 'administer site configuration'
+@@ -17,7 +17,7 @@ miniorange_saml.sp_setup:
+ miniorange_saml.idp_setup:
+   path: /admin/config/people/miniorange_saml/idp_setup
+   defaults:
+-    _title: 'miniOrange SAML  &nbsp;&nbsp;<a id="contact_us_button" class="button button--primary js-form-submit mo_top_bar_button form-submit use-ajax" href="MiniorageSupport" data-dialog-type = "modal" data-dialog-options="{&quot;width&quot;:&quot;70%&quot;}" >Contact Us</a><a class="button button--primary js-form-submit mo_top_bar_button form-submit use-ajax" href="trial" data-dialog-type = "modal" data-dialog-options="{&quot;width&quot;:&quot;70%&quot;}" >Request 7-days Trial</a>'
++    _title: 'miniOrange SAML'
+     _form: \Drupal\miniorange_saml\Form\MiniorangeIDPSetup
+   requirements:
+     _permission: 'administer site configuration'
+@@ -25,7 +25,7 @@ miniorange_saml.idp_setup:
+ miniorange_saml.login_options:
+   path: /admin/config/people/miniorange_saml/signon_settings
+   defaults:
+-    _title: 'miniOrange SAML  &nbsp;&nbsp;<a class="button button--primary js-form-submit mo_top_bar_button form-submit use-ajax" href="MiniorageSupport" data-dialog-type = "modal" data-dialog-options="{&quot;width&quot;:&quot;70%&quot;}" >Contact Us</a><a class="button button--primary js-form-submit mo_top_bar_button form-submit use-ajax" href="trial" data-dialog-type = "modal" data-dialog-options="{&quot;width&quot;:&quot;70%&quot;}" >Request 7-days Trial</a>'
++    _title: 'miniOrange SAML'
+     _form: \Drupal\miniorange_saml\Form\MiniorangeSignonSettings
+   requirements:
+     _permission: 'administer site configuration'
+@@ -33,7 +33,7 @@ miniorange_saml.login_options:
+ miniorange_saml.mapping:
+   path: /admin/config/people/miniorange_saml/Mapping
+   defaults:
+-    _title: 'miniOrange SAML  &nbsp;&nbsp;<a class="button button--primary js-form-submit mo_top_bar_button form-submit use-ajax" href="MiniorageSupport" data-dialog-type = "modal" data-dialog-options="{&quot;width&quot;:&quot;70%&quot;}" >Contact Us</a><a class="button button--primary js-form-submit mo_top_bar_button form-submit use-ajax" href="trial" data-dialog-type = "modal" data-dialog-options="{&quot;width&quot;:&quot;70%&quot;}" >Request 7-days Trial</a>'
++    _title: 'miniOrange SAML'
+     _form: \Drupal\miniorange_saml\Form\Mapping
+   requirements:
+     _permission: 'administer site configuration'
+@@ -41,7 +41,7 @@ miniorange_saml.mapping:
+ miniorange_saml.advance_settings:
+   path: /admin/config/people/miniorange_saml/AdvanceSettings
+   defaults:
+-    _title: 'miniOrange SAML  &nbsp;&nbsp;<a class="button button--primary js-form-submit mo_top_bar_button form-submit use-ajax" href="MiniorageSupport" data-dialog-type = "modal" data-dialog-options="{&quot;width&quot;:&quot;70%&quot;}" >Contact Us</a><a class="button button--primary js-form-submit mo_top_bar_button form-submit use-ajax" href="trial" data-dialog-type = "modal" data-dialog-options="{&quot;width&quot;:&quot;70%&quot;}" >Request 7-days Trial</a>'
++    _title: 'miniOrange SAML'
+     _form: \Drupal\miniorange_saml\Form\MiniornageAdvanceSettings
+   requirements:
+     _permission: 'administer site configuration'
+@@ -57,7 +57,7 @@ miniorange_saml.support:
+ miniorange_saml.licensing:
+   path: /admin/config/people/miniorange_saml/Licensing
+   defaults:
+-    _title: 'miniOrange SAML  &nbsp;&nbsp;<a class="button button--primary js-form-submit mo_top_bar_button form-submit use-ajax" href="MiniorageSupport" data-dialog-type = "modal" data-dialog-options="{&quot;width&quot;:&quot;70%&quot;}" >Contact Us</a><a class="button button--primary js-form-submit mo_top_bar_button form-submit use-ajax" href="trial" data-dialog-type = "modal" data-dialog-options="{&quot;width&quot;:&quot;70%&quot;}" >Request 7-days Trial</a>'
++    _title: 'miniOrange SAML'
+     _form: \Drupal\miniorange_saml\Form\MiniorangeLicensing
+   requirements:
+     _permission: 'administer site configuration'
+@@ -114,7 +114,7 @@ miniorange_saml.miniorange_saml_close_register:
+ miniorange_saml.modal_form:
+   path: /removeLicenseKey
+   defaults:
+-    _title: 'miniorange SAML Remove License'
++    _title: 'miniOrange SAML'
+     _controller: '\Drupal\miniorange_saml\Controller\miniorange_samlController::openModalForm'
+   requirements:
+     _permission: 'administer site configuration'
+diff --git a/src/Controller/miniorange_samlController.php b/src/Controller/miniorange_samlController.php
+index 56e9927..848d3cc 100644
+--- a/src/Controller/miniorange_samlController.php
++++ b/src/Controller/miniorange_samlController.php
+@@ -202,13 +202,14 @@ class miniorange_samlController extends ControllerBase {
+     function saml_metadata() {
+         $entity_id  = Utilities::getIssuer();
+         $acs_url    = Utilities::getAcsUrl();
++        $nameid     = Utilities::getNameId();
+         $validUntil = Utilities::getMetadataValidationTime();
+         $header    = isset($_REQUEST['download']) && boolval($_REQUEST['download']) ? 'Content-Disposition: attachment; filename="Metadata.xml"' : 'Content-Type: text/xml';
+         header($header);
+         echo '<?xml version="1.0"?>
+                 <md:EntityDescriptor xmlns:md="urn:oasis:names:tc:SAML:2.0:metadata" validUntil="'. $validUntil .'" cacheDuration="PT'. MiniorangeSAMLConstants::TIME_CACHED .'S" entityID="' . $entity_id . '">
+                   <md:SPSSODescriptor AuthnRequestsSigned="false" WantAssertionsSigned="true" protocolSupportEnumeration="urn:oasis:names:tc:SAML:2.0:protocol">
+-                    <md:NameIDFormat>urn:oasis:names:tc:SAML:1.1:nameid-format:unspecified</md:NameIDFormat>
++                    <md:NameIDFormat>' . $nameid . '</md:NameIDFormat>
+                     <md:AssertionConsumerService Binding="urn:oasis:names:tc:SAML:2.0:bindings:HTTP-POST" Location="' . $acs_url . '" index="1"/>
+                   </md:SPSSODescriptor>
+                   <md:Organization>
+diff --git a/src/Form/MiniorangeIDPSetup.php b/src/Form/MiniorangeIDPSetup.php
+index 5864093..2c2d8ab 100644
+--- a/src/Form/MiniorangeIDPSetup.php
++++ b/src/Form/MiniorangeIDPSetup.php
+@@ -83,7 +83,7 @@ class MiniorangeIDPSetup extends FormBase {
+             'data' => Markup::create('<span id="audience_url">' . Utilities::getIssuer() . '</span>'. $copy_image )
+         ];
+         $X_509_certificate = [
+-            'data' => Markup::create('Available in <b><a href="' . $base_url . MiniorangeSAMLConstants::LICENSING_TAB_URL .'">[Standard, Premium and Enterprise]</a></b> version.' )
++            'data' => Markup::create('<span id="certificate_x509">' . Utilities::getX509Certificate() . '</span>'. $copy_image )
+         ];
+         $Custom_X_509_certificate = [
+             'data' => Markup::create('Click <a class="use-ajax"  data-dialog-type = "modal"  data-ajax-progress="fullscreen" data-dialog-options="{&quot;width&quot;:&quot;80%&quot;}"  href="'.$base_url.'/admin/config/people/miniorange_saml/generate_certificate">here</a> to generate custom certificate' )
+@@ -95,10 +95,10 @@ class MiniorangeIDPSetup extends FormBase {
+             'data' => Markup::create('<span id="destinationURL">' . $acs_url . '</span>'. $copy_image )
+         ];
+         $SingleLogoutURL = [
+-            'data' => Markup::create('Available in <b><a href="' . $base_url . MiniorangeSAMLConstants::LICENSING_TAB_URL .'">[Premium and Enterprise]</a></b> version.' )
++            'data' => Markup::create('<span id="idp_logout_url">' . Utilities::getIdpLogoutUrl() . '</span>'. $copy_image )
+         ];
+         $NameIDFormat = [
+-            'data' => Markup::create('<span id="nameID">' . "urn:oasis:names:tc:SAML:1.1:nameid-format:unspecified" .'</span>'. $copy_image )
++            'data' => Markup::create('<span id="name_id_format_text">' . Utilities::getNameId() . '</span>'. $copy_image )
+         ];
+
+         $mo_table_content = array (
+diff --git a/src/Form/MiniorangeSPInformation.php b/src/Form/MiniorangeSPInformation.php
+index 6c17e78..907a711 100644
+--- a/src/Form/MiniorangeSPInformation.php
++++ b/src/Form/MiniorangeSPInformation.php
+@@ -191,7 +191,7 @@ class MiniorangeSPInformation extends FormBase {
+
+         $form['mo_saml_IDP_setup']['miniorange_saml_fetch_metadata_1'] = array(
+             '#type' => 'checkbox',
+-            '#title' => t('Allow auto-update IdP signature certificate. <a href="' . $base_url . MiniorangeSAMLConstants::LICENSING_TAB_URL .'">[Premium and Enterprise]</a>.'),
++            '#title' => t('Allow auto-update IdP signature certificate.'),
+             '#disabled' => TRUE,
+             '#description' => t('The metadata URL of IdP will be stored and pinged on regular intervals (<a target="_blank" href="' . $base_url . '/admin/config/system/cron ">cron run</a>) to fetch updated X.509 certs.'),
+         );
+@@ -225,9 +225,9 @@ class MiniorangeSPInformation extends FormBase {
+
+         $form['mo_saml_service_provider_metadata']['miniorange_saml_idp_binding'] = array(
+             '#type' => 'radios',
+-            '#title' => t('HTTP Binding of SSO Request ') . '<a href="' . $base_url . MiniorangeSAMLConstants::LICENSING_TAB_URL .'">[Standard, Premium and Enterprise]</a></b>',
+-            '#options' => array('HTTP-Redirect'=>t('HTTP-Redirect'),'HTTP-POST'=>t('HTTP-POST')),
+-            '#disabled' => TRUE,
++            '#title' => t('HTTP Binding of SSO Request '),
++            '#options' => array('HTTP-Redirect' => t('HTTP-Redirect'), 'HTTP-POST' => t('HTTP-POST')),
++            '#default_value' => $config->get('miniorange_saml_idp_binding'),
+             '#prefix' => '<div class="container-inline">',
+             '#suffix' => '</div>'
+           );
+@@ -242,27 +242,27 @@ class MiniorangeSPInformation extends FormBase {
+         );
+
+         $form['mo_saml_service_provider_metadata']['miniorange_saml_nameid_format'] = array(
+-            '#type' => 'select',
+-            '#title' => t('NameID Format <a href="' . $base_url . MiniorangeSAMLConstants::LICENSING_TAB_URL .'"> [Premium]</a>'),
+-            '#options' => array('nameid-format' => t('urn:oasis:names:tc:SAML:1.1:nameid-format:unspecified'),),
++            '#type' => 'textfield',
++            '#title' => t('NameID Format'),
++            '#default_value' => $config->get('miniorange_saml_nameid_format'),
+             '#attributes' => array('style' => 'width:90%;'),
+-            '#disabled' => TRUE,
++            '#description' => t('default: urn:oasis:names:tc:SAML:1.1:nameid-format:unspecified'),
+         );
+
+         $form['mo_saml_service_provider_metadata']['miniorange_saml_slo_binding'] = array(
+             '#type' => 'radios',
+-            '#title' => t('HTTP Binding of SLO Request ') . '<a href="' . $base_url . MiniorangeSAMLConstants::LICENSING_TAB_URL .'">[Premium]</a>',
+-            '#options' => array('HTTP-Redirect'=>t('HTTP-Redirect'),'HTTP-POST'=>t('HTTP-POST')),
+-            '#disabled' => TRUE,
++            '#title' => t('HTTP Binding of SLO Request '),
++            '#options' => array('HTTP-Redirect' => t('HTTP-Redirect'), 'HTTP-POST' => t('HTTP-POST')),
++            '#default_value' => $config->get('miniorange_saml_slo_binding'),
+             '#prefix' => '<div class="container-inline">',
+             '#suffix' => '</div>'
+         );
+
+         $form['mo_saml_service_provider_metadata']['miniorange_saml_idp_logout_url'] = array(
+             '#type' => 'textfield',
+-            '#title' => t('SAML Logout URL <a href="' . $base_url . MiniorangeSAMLConstants::LICENSING_TAB_URL .'">[Premium]</a>'),
+-            '#attributes' => array('style' => 'width:90%; background-color: hsla(0,0%,0%,0.08) !important;', 'placeholder' => t('SAML Logout URL')),
+-            '#disabled' => TRUE,
++            '#title' => t('SAML Logout URL'),
++            '#default_value' => $config->get('miniorange_saml_idp_logout_url'),
++            '#attributes' => array('style' => 'width:90%', 'placeholder' => t('SAML Logout URL')),
+         );
+
+         $form['mo_saml_service_provider_metadata']['myradios'] = array(
+@@ -280,9 +280,9 @@ class MiniorangeSPInformation extends FormBase {
+         $form['mo_saml_service_provider_metadata']['miniorange_saml_idp_x509_certificate'] = array(
+             '#type' => 'textarea',
+             '#default_value' => $config->get('miniorange_saml_idp_x509_certificate'),
+-            '#attributes' => array('placeholder' => '-----BEGIN CERTIFICATE-----'.PHP_EOL.'XXXXXXXXXXXXXXXXXXXXXXXXXXX'.PHP_EOL.'-----END CERTIFICATE-----'),
+-            '#states' => array('visible' => array(':input[name = "myradios"]' => array( 'value' => 'text' ),),),
+-            '#suffix' => '</div>'
++            '#attributes' => array('placeholder' => '-----BEGIN CERTIFICATE-----' . PHP_EOL . 'XXXXXXXXXXXXXXXXXXXXXXXXXXX' . PHP_EOL . '-----END CERTIFICATE-----'),
++            '#states' => array('visible' => array(':input[name = "myradios"]' => array('value' => 'text'),),),
++            '#suffix' => '</div>',
+         );
+
+         $form['mo_saml_service_provider_metadata']['mo_saml_cert_file'] = array(
+@@ -340,14 +340,14 @@ class MiniorangeSPInformation extends FormBase {
+
+         $form['mo_saml_service_provider_metadata']['miniorange_saml_sign_request'] = array(
+             '#type' => 'checkbox',
+-            '#title' => t('Sign SSO and SLO requests <b><a href="' . $base_url . MiniorangeSAMLConstants::LICENSING_TAB_URL .'"> [Standard, Premium and Enterprise]</a></b>'),
+-            '#disabled' => TRUE,
++            '#title' => t('Sign SSO and SLO requests'),
++            '#default_value' => $config->get('miniorange_saml_sign_request'),
+         );
+
+         $form['mo_saml_service_provider_metadata']['security_signature_algorithm'] = array(
+             '#type' => 'select',
+-            '#title' => t('SAML Request Signature algorithm <a href="' . $base_url . MiniorangeSAMLConstants::LICENSING_TAB_URL .'">[Enterprise]</a>'),
+-            '#options' => array('RSA_SHA256'=>t('SHA256'),'RSA_SHA384'=>t('SHA384'), 'RSA_SHA512'=>t('SHA512'), 'RSA_SHA1'=>t('SHA1')),
++            '#title' => t('SAML Request Signature algorithm'),
++            '#options' => array('RSA_SHA256' => t('SHA256'), 'RSA_SHA384' => t('SHA384'), 'RSA_SHA512' => t('SHA512'), 'RSA_SHA1' => t('SHA1')),
+             '#attributes' => array('style' => 'width: 90%'),
+             '#disabled' => FALSE,
+             '#suffix' => '<br>',
+@@ -414,15 +414,19 @@ class MiniorangeSPInformation extends FormBase {
+     */
+     public function submitForm(array &$form, FormStateInterface $form_state) {
+         $base_url = \Drupal::request()->getSchemeAndHttpHost() . \Drupal::request()->getBaseUrl();
+-        $form_values        = $form_state->getValues();
+-        $issuer             = $form_values['miniorange_saml_idp_issuer'];
+-        $idp_name           = $form_values['miniorange_saml_idp_name'];
+-        $nameid_format      = 'urn:oasis:names:tc:SAML:1.1:nameid-format:unspecified';
+-        $login_url          = $form_values['miniorange_saml_idp_login_url'];
+-        $x509_cert_value = isset( $form_values['miniorange_saml_idp_x509_certificate'] ) ? Utilities::sanitize_certificate( $form_values['miniorange_saml_idp_x509_certificate'] ) : '';
++        $form_values = $form_state->getValues();
++        $issuer = $form_values['miniorange_saml_idp_issuer'];
++        $idp_name = $form_values['miniorange_saml_idp_name'];
++        $nameid_format = $form_values['miniorange_saml_nameid_format'];
++        $login_url = $form_values['miniorange_saml_idp_login_url'];
++        $logout_url = $form_values['miniorange_saml_idp_logout_url'];
++        $x509_cert_value = isset($form_values['miniorange_saml_idp_x509_certificate']) ? Utilities::sanitize_certificate($form_values['miniorange_saml_idp_x509_certificate']) : '';
+         $enable_login_value = $form_values['miniorange_saml_enable_login'];
+-        $character_encoding     = $form_values['miniorange_saml_character_encoding'];
++        $character_encoding = $form_values['miniorange_saml_character_encoding'];
+         $display_sso_on_custom_form = $form_values['miniorange_saml_sso_link_on_custom_form'];
++        $slo_binding = $form_values['miniorange_saml_slo_binding'];
++        $sign_request = $form_values['miniorange_saml_sign_request'];
++        $idp_binding = $form_values['miniorange_saml_idp_binding'];
+
+         if( empty( $idp_name ) || empty( $issuer ) || empty( $login_url ) ) {
+             \Drupal::messenger()->addMessage(t('The <b><u>Identity Provider Name, IdP Entity ID or Issuer</u></b> and <b><u>SAML Login URL</u></b> fields are mandatory.'), 'error');
+@@ -443,17 +447,21 @@ class MiniorangeSPInformation extends FormBase {
+
+         $editConfig = \Drupal::configFactory()->getEditable('miniorange_saml.settings');
+
+-        $editConfig->set('miniorange_saml_base', $base_url )
+-          ->set('miniorange_saml_idp_name', $idp_name )
+-          ->set('miniorange_saml_idp_issuer', str_replace(' ', '', $issuer))
+-          ->set('miniorange_saml_nameid_format', $nameid_format )
+-          ->set('miniorange_saml_idp_login_url', str_replace(' ', '', $login_url))
+-          ->set('miniorange_saml_idp_x509_certificate', $x509_cert_value )
+-          ->set('miniorange_saml_enable_login', $enable_login )
+-          ->set('miniorange_saml_character_encoding',$character_encoding)
+-          ->set('miniorange_saml_sso_link_on_custom_form',$display_sso_on_custom_form)
+-          ->set('miniorange_saml_custom_form_ids',$custom_form_ids)
+-          ->set('miniorange_saml_module_configured','Yes')->save();
++        $editConfig->set('miniorange_saml_base', $base_url)
++            ->set('miniorange_saml_idp_name', $idp_name)
++            ->set('miniorange_saml_idp_issuer', str_replace(' ', '', $issuer))
++            ->set('miniorange_saml_nameid_format', $nameid_format)
++            ->set('miniorange_saml_idp_login_url', str_replace(' ', '', $login_url))
++            ->set('miniorange_saml_idp_logout_url', str_replace(' ', '', $logout_url))
++            ->set('miniorange_saml_idp_x509_certificate', $x509_cert_value)
++            ->set('miniorange_saml_enable_login', $enable_login)
++            ->set('miniorange_saml_character_encoding', $character_encoding)
++            ->set('miniorange_saml_sso_link_on_custom_form', $display_sso_on_custom_form)
++            ->set('miniorange_saml_slo_binding', $slo_binding)
++            ->set('miniorange_saml_sign_request', $sign_request)
++            ->set('miniorange_saml_idp_binding', $idp_binding)
++            ->set('miniorange_saml_custom_form_ids', $custom_form_ids)
++            ->set('miniorange_saml_module_configured', 'Yes')->save();
+
+         \Drupal::messenger()->addStatus(t('Identity Provider Configuration successfully saved'));
+         $response = new RedirectResponse($base_url . '/admin/config/people/miniorange_saml/sp_setup/');
+@@ -541,18 +549,28 @@ class MiniorangeSPInformation extends FormBase {
+           $saml_issuer = $idp->getEntityID();
+           $saml_x509_certificate = $idp->getSigningCertificate();
+
++          $saml_logout_url = $idp->getLogoutURL('HTTP-Redirect');
++          if ($saml_logout_url) {
++              $editConfig->set('miniorange_saml_idp_logout_url', $saml_logout_url)->save();
++          }
++
++          $name_id_format = $idp->getNameIDFormat();
++          if ($name_id_format) {
++              $editConfig->set('miniorange_saml_nameid_format', $name_id_format)->save();
++          }
++
+           $editConfig->set('miniorange_saml_idp_issuer', $saml_issuer)
+             ->set('miniorange_saml_idp_login_url', $saml_login_url)
+             ->set('miniorange_saml_enable_login', 1)
+             ->set('miniorange_saml_idp_x509_certificate', $saml_x509_certificate[0])
+             ->save();
+-			}
++        }
+         \Drupal::messenger()->addStatus(t('Identity Provider configurations successfully saved.'));
+-        $editConfig->set('miniorange_saml_module_configured','Yes')->save();
+-		} else {
++        $editConfig->set('miniorange_saml_module_configured', 'Yes')->save();
++      } else {
+         \Drupal::messenger()->addError(t('Please provide a valid metadata file.'));
+-		}
+-  }
++      }
++    }
+
+     function miniorange_add_new_idp(array &$form, FormStateInterface $form_state) {
+       $base_url = \Drupal::request()->getSchemeAndHttpHost() . \Drupal::request()->getBaseUrl();
+diff --git a/src/MetadataReader.php b/src/MetadataReader.php
+index 506099b..1a5a90d 100644
+--- a/src/MetadataReader.php
++++ b/src/MetadataReader.php
+@@ -35,6 +35,7 @@ class MetadataReader{
+ class IdentityProviders{
+
+ 	private $idpName;
++  private $nameIdFormat;
+ 	private $entityID;
+ 	private $loginDetails;
+ 	private $logoutDetails;
+@@ -45,6 +46,7 @@ class IdentityProviders{
+ 	public function __construct(\DOMElement $xml = NULL){
+
+ 		$this->idpName = '';
++    $this->nameIdFormat = 'urn:oasis:names:tc:SAML:1.1:nameid-format:unspecified';
+ 		$this->loginDetails = array();
+ 		$this->logoutDetails = array();
+ 		$this->signingCertificate = array();
+@@ -139,6 +141,14 @@ class IdentityProviders{
+ 			array_push($this->encryptionCertificate, $certData);
+ 	}
+
++  private function parseNameIdFormat($xml)
++  {
++    $nameIdFormatNode = Utilities::xpQuery($xml, './saml_metadata:NameIDFormat');
++    $nameIdFormatData = trim($nameIdFormatNode[0]->textContent);
++    if (!empty($nameIdFormatData))
++      $this->nameIdFormat = $nameIdFormatData;
++  }
++
+ 	public function getIdpName(){
+ 		return "";
+ 	}
+@@ -174,6 +184,11 @@ class IdentityProviders{
+ 	public function isRequestSigned(){
+ 		return $this->signedRequest;
+ 	}
++
++  public function getNameIDFormat()
++  {
++    return $this->nameIdFormat;
++  }
+ }
+
+ class ServiceProviders{
+diff --git a/src/Utilities.php b/src/Utilities.php
+index b78c5d7..88ab989 100644
+--- a/src/Utilities.php
++++ b/src/Utilities.php
+@@ -144,7 +144,7 @@ class Utilities {
+                 </td>
+             </tr>
+         </table>
+-    </form>')
++    </form>'),
+         );
+         return $form;
+     }
+@@ -682,7 +682,7 @@ class Utilities {
+                     miniorange_saml_sp_registration::miniorange_otp(false,false,false);
+                 }else{
+                     \Drupal::messenger()->addMessage(t('Verify email address by entering the passcode sent to @username', [
+-                        '@username' => $username
++                        '@username' => $username,
+                     ]));
+                 }
+             }else{
+@@ -808,6 +808,23 @@ class Utilities {
+       return substr( $b_url, -1 ) == '/' ?  $b_url . 'samlassertion' : $b_url . '/samlassertion';
+     }
+
++  public static function getX509Certificate()
++  {
++    $certificate = \Drupal::config('miniorange_saml.settings')->get('miniorange_saml_idp_x509_certificate');
++    return $certificate ?? '';
++  }
++
++  public static function getNameId()
++  {
++    $saved_name_id = \Drupal::config('miniorange_saml.settings')->get('miniorange_saml_nameid_format');
++    return $saved_name_id ?? 'urn:oasis:names:tc:SAML:1.1:nameid-format:unspecified';
++  }
++
++  public static function getIdpLogoutUrl()
++  {
++    $saved_url = \Drupal::config('miniorange_saml.settings')->get('miniorange_saml_idp_logout_url');
++    return $saved_url ?? '';
++  }
+
+   public static function testConfigurationLogs(string $error) {
+     $config_edit = \Drupal::configFactory()->getEditable('miniorange_saml.settings');

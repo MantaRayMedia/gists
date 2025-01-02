@@ -1,0 +1,44 @@
+diff --git a/src/Form/LinkCheckerAdminSettingsForm.php b/src/Form/LinkCheckerAdminSettingsForm.php
+index 73cafcf..f97509a 100644
+--- a/src/Form/LinkCheckerAdminSettingsForm.php
++++ b/src/Form/LinkCheckerAdminSettingsForm.php
+@@ -128,10 +128,20 @@ class LinkCheckerAdminSettingsForm extends ConfigFormBase {
+     ];
+     $form['status']['title']['#markup'] = $this->t('Progress of link extraction.');
+     $total_count = $this->extractorBatch->getTotalEntitiesToProcess();
++
+     if (!empty($total_count)) {
+       $indexed_count = $this->extractorBatch->getNumberOfProcessedEntities();
+       $percent = round(100 * $indexed_count / $total_count);
+ 
++      if (((int) $indexed_count) !== $total_count) {
++        $form = ['process_all' => [
++          '#type' => 'submit',
++          '#value' => $this->t('Process all'),
++          '#description' => 'Processes all unprocessed links',
++          '#submit' => ['::submitForm', '::submitProcessAll'],
++        ]] + $form; // this will make sure the button is at the top
++      }
++
+       $index_progress = [
+         '#theme' => 'progress_bar',
+         '#percent' => $percent,
+@@ -503,4 +513,18 @@ class LinkCheckerAdminSettingsForm extends ConfigFormBase {
+     $this->submitAnalyzeLinks($form, $form_state);
+   }
+ 
++
++  public function submitProcessAll(): void
++  {
++    $totalCount = $this->extractorBatch->getTotalEntitiesToProcess();
++    $processedCount = (int)$this->extractorBatch->getNumberOfProcessedEntities();
++
++    $batch = new BatchBuilder();
++    $batch->setTitle('Extract entities')
++      ->addOperation([$this->extractorBatch, 'batchProcessEntities'], [$totalCount - $processedCount])
++      ->setProgressive()
++      ->setFinishCallback([$this->extractorBatch, 'batchFinished']);
++
++    batch_set($batch->toArray());
++  }
+ }

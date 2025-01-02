@@ -1,0 +1,13 @@
+diff --git a/src/HtmlTitleFilter.php b/src/HtmlTitleFilter.php
+index fe4aff2..9d33f63 100644
+--- a/src/HtmlTitleFilter.php
++++ b/src/HtmlTitleFilter.php
+@@ -88,7 +88,7 @@ public function decodeToMarkup($str) {
+    */
+   public function getAllowHtmlTags() {
+     $matches = [];
+-    $allow_html_tags = $this->configFactory->get('html_title.settings')->get('allow_html_tags');
++    $allow_html_tags = $this->configFactory->get('html_title.settings')->get('allow_html_tags') ?? '';
+     preg_match_all('/<(.+?)\/?>/', $allow_html_tags, $matches);
+     return $matches[1];
+   }

@@ -1,0 +1,13 @@
+diff --git a/core/modules/system/system.routing.yml b/core/modules/system/system.routing.yml
+index f5335c48c1..9ee651d85f 100644
+--- a/core/modules/system/system.routing.yml
++++ b/core/modules/system/system.routing.yml
+@@ -156,7 +156,7 @@ system.site_information_settings:
+     _form: '\Drupal\system\Form\SiteInformationForm'
+     _title: 'Basic site settings'
+   requirements:
+-    _permission: 'administer site configuration'
++    _permission: 'administer nodes'
+ 
+ system.cron_settings:
+   path: '/admin/config/system/cron'

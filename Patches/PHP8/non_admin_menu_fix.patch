@@ -1,0 +1,13 @@
+diff --git a/menu_admin_per_menu.module b/menu_admin_per_menu.module
+index acc4eb8..d4ec0b8 100644
+--- a/menu_admin_per_menu.module
++++ b/menu_admin_per_menu.module
+@@ -64,7 +64,7 @@ function menu_admin_per_menu_form_node_form_alter(&$form, FormStateInterface $fo
+     $allowed_menus = $allowedMenusService->getPerMenuPermissions($account);
+ 
+     $default_value = &$form['menu']['link']['menu_parent']['#default_value'];
+-    [$current_menu,] = explode(':', $default_value, 2);
++    [$current_menu,] = explode(':', $default_value ?? '', 2);
+     // Disallow editing the menu item if there is a pre-existing menu item
+     // belonging to a menu the user does not have permission to access.
+     if (!empty($current_menu) && !in_array($current_menu, $allowed_menus)) {

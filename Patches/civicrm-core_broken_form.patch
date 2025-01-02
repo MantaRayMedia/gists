@@ -1,0 +1,25 @@
+diff --git a/templates/CRM/Price/Form/PriceSet.tpl b/templates/CRM/Price/Form/PriceSet.tpl
+index 5ba8c7439c..57ec25913b 100644
+--- a/templates/CRM/Price/Form/PriceSet.tpl
++++ b/templates/CRM/Price/Form/PriceSet.tpl
+@@ -25,7 +25,7 @@
+
+     {foreach from=$priceSet.fields item=element key=field_id}
+         {* Skip 'Admin' visibility price fields WHEN this tpl is used in online registration unless user has administer CiviCRM permission. *}
+-        {if $element.visibility !== 'admin' || isShowAdminVisibilityFields}
++        {if $element.visibility !== 'admin' || $isShowAdminVisibilityFields}
+             {if $element.help_pre}<span class="content description">{$element.help_pre|purify}</span><br />{/if}
+             <div class="crm-section {$element.name|escape}-section crm-price-field-id-{$field_id}">
+             {if ($element.html_type eq 'CheckBox' || $element.html_type == 'Radio') && $element.options_per_line}
+diff --git a/templates/CRM/UF/Form/Block.tpl b/templates/CRM/UF/Form/Block.tpl
+index 95fb25c7b3..41d26f3434 100644
+--- a/templates/CRM/UF/Form/Block.tpl
++++ b/templates/CRM/UF/Form/Block.tpl
+@@ -8,6 +8,7 @@
+  +--------------------------------------------------------------------+
+ *}
+ {* Edit or display Profile fields, when embedded in an online contribution or event registration form. *}
++{crmRegion scripts}
+ {if ! empty( $fields )}
+   {strip}
+     {assign var=zeroField value="Initial Non Existent Fieldset"}

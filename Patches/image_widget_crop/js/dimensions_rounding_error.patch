@@ -10,7 +10,7 @@ index e3edb02..46a66be 100644
 -      height: y * (this.originalHeight / imageData.height)
 -    }
 +      width: Math.ceil(x * (this.originalWidth / imageData.width)),
-+      height: Math.ceil(y * (this.originalHeight / imageData.height))S
++      height: Math.ceil(y * (this.originalHeight / imageData.height))
 +    };
    };
  
