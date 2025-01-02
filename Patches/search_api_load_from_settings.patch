@@ -27,7 +27,7 @@ index 1cc5820..3add02f 100644
 +
 +    // read configuration from settings
 +    $settings = Settings::get($this->backend, []);
-+    $settings = isset($settings[$this->id]) ? $settings[$this->id] : [];
++    $settings = $settings[$this->id] ?? $settings['solr_server'] ?? []; // grab the specific server's config, fallback to 'solr_server'
 +    $this->backend_config["connector_config"] = array_merge($this->backend_config["connector_config"] ?? [], $settings);
 +
      return $this->backend_config;
