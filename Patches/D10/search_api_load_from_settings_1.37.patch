@@ -1,0 +1,217 @@
+diff --git a/src/Entity/Server.php b/src/Entity/Server.php
+index 78093d5..c55d375 100644
+--- a/src/Entity/Server.php
++++ b/src/Entity/Server.php
+@@ -2,10 +2,12 @@
+ 
+ namespace Drupal\search_api\Entity;
+ 
++use Drupal;
+ use Drupal\Core\Cache\Cache;
+ use Drupal\Core\Config\Action\Attribute\ActionMethod;
+ use Drupal\Core\Config\Entity\ConfigEntityBase;
+ use Drupal\Core\Entity\EntityStorageInterface;
++use Drupal\Core\Site\Settings;
+ use Drupal\Core\StringTranslation\TranslatableMarkup;
+ use Drupal\search_api\Event\DeterminingServerFeaturesEvent;
+ use Drupal\search_api\Event\SearchApiEvents;
+@@ -129,7 +131,7 @@ public function getDescription() {
+    * {@inheritdoc}
+    */
+   public function hasValidBackend() {
+-    $backend_plugin_definition = \Drupal::service('plugin.manager.search_api.backend')->getDefinition($this->getBackendId(), FALSE);
++    $backend_plugin_definition = Drupal::service('plugin.manager.search_api.backend')->getDefinition($this->getBackendId(), FALSE);
+     return !empty($backend_plugin_definition);
+   }
+ 
+@@ -145,7 +147,10 @@ public function getBackendId() {
+    */
+   public function getBackend() {
+     if (!$this->backendPlugin) {
+-      $backend_plugin_manager = \Drupal::service('plugin.manager.search_api.backend');
++      $backend_plugin_manager = Drupal::service('plugin.manager.search_api.backend');
++      // call getBackendConfig to override from settings if exists!
++      $this->getBackendConfig();
++
+       $config = $this->backend_config;
+       $config['#server'] = $this;
+       if (!($this->backendPlugin = $backend_plugin_manager->createInstance($this->getBackendId(), $config))) {
+@@ -161,6 +166,11 @@ public function getBackend() {
+    * {@inheritdoc}
+    */
+   public function getBackendConfig() {
++    // read configuration from settings
++    $settings = Settings::get($this->backend, []);
++    $settings = $settings[$this->id] ?? $settings['solr_server'] ?? []; // grab the specific server's config, fallback to 'solr_server'
++    $this->backend_config["connector_config"] = array_merge($this->backend_config["connector_config"] ?? [], $settings);
++
+     return $this->backend_config;
+   }
+ 
+@@ -183,7 +193,7 @@ public function setBackendConfig(array $backend_config) {
+    * {@inheritdoc}
+    */
+   public function getIndexes(array $properties = []) {
+-    $storage = \Drupal::entityTypeManager()->getStorage('search_api_index');
++    $storage = Drupal::entityTypeManager()->getStorage('search_api_index');
+     return $storage->loadByProperties(['server' => $this->id()] + $properties);
+   }
+ 
+@@ -218,10 +228,10 @@ public function getSupportedFeatures() {
+         $this->features = $this->getBackend()->getSupportedFeatures();
+       }
+       $description = 'This hook is deprecated in search_api:8.x-1.14 and is removed from search_api:2.0.0. Use the "search_api.determining_server_features" event instead. See https://www.drupal.org/node/3059866';
+-      \Drupal::moduleHandler()
++      Drupal::moduleHandler()
+         ->alterDeprecated($description, 'search_api_server_features', $this->features, $this);
+       /** @var \Symfony\Contracts\EventDispatcher\EventDispatcherInterface $eventDispatcher */
+-      $eventDispatcher = \Drupal::getContainer()->get('event_dispatcher');
++      $eventDispatcher = Drupal::getContainer()->get('event_dispatcher');
+       $eventDispatcher->dispatch(new DeterminingServerFeaturesEvent($this->features, $this), SearchApiEvents::DETERMINING_SERVER_FEATURES);
+     }
+ 
+@@ -262,7 +272,7 @@ public function getBackendDefinedFields(IndexInterface $index) {
+    * {@inheritdoc}
+    */
+   public function addIndex(IndexInterface $index) {
+-    $server_task_manager = \Drupal::getContainer()->get('search_api.server_task_manager');
++    $server_task_manager = Drupal::getContainer()->get('search_api.server_task_manager');
+     // When freshly adding an index to a server, it doesn't make any sense to
+     // execute possible other tasks for that server/index combination.
+     // (removeIndex() is implicit when adding an index which was already added.)
+@@ -282,7 +292,7 @@ public function addIndex(IndexInterface $index) {
+       $this->logException($e, '%type while adding index %index to server %server: @message in %function (line %line of %file).', $vars);
+     }
+ 
+-    $task_manager = \Drupal::getContainer()
++    $task_manager = Drupal::getContainer()
+       ->get('search_api.task_manager');
+     $task_manager->addTask(__FUNCTION__, $this, $index);
+   }
+@@ -291,7 +301,7 @@ public function addIndex(IndexInterface $index) {
+    * {@inheritdoc}
+    */
+   public function updateIndex(IndexInterface $index) {
+-    $server_task_manager = \Drupal::getContainer()->get('search_api.server_task_manager');
++    $server_task_manager = Drupal::getContainer()->get('search_api.server_task_manager');
+     try {
+       if ($server_task_manager->execute($this)) {
+         $this->getBackend()->updateIndex($index);
+@@ -306,7 +316,7 @@ public function updateIndex(IndexInterface $index) {
+       $this->logException($e, '%type while updating the fields of index %index on server %server: @message in %function (line %line of %file).', $vars);
+     }
+ 
+-    $task_manager = \Drupal::getContainer()
++    $task_manager = Drupal::getContainer()
+       ->get('search_api.task_manager');
+     $task_manager->addTask(__FUNCTION__, $this, $index, $index->original ?? NULL);
+   }
+@@ -315,7 +325,7 @@ public function updateIndex(IndexInterface $index) {
+    * {@inheritdoc}
+    */
+   public function removeIndex($index) {
+-    $server_task_manager = \Drupal::getContainer()->get('search_api.server_task_manager');
++    $server_task_manager = Drupal::getContainer()->get('search_api.server_task_manager');
+     // When removing an index from a server, it doesn't make any sense anymore
+     // to delete items from it, or react to other changes.
+     $server_task_manager->delete($this, $index);
+@@ -334,7 +344,7 @@ public function removeIndex($index) {
+       $this->logException($e, '%type while removing index %index from server %server: @message in %function (line %line of %file).', $vars);
+     }
+ 
+-    $task_manager = \Drupal::getContainer()
++    $task_manager = Drupal::getContainer()
+       ->get('search_api.task_manager');
+     $data = NULL;
+     if (!is_object($index)) {
+@@ -348,7 +358,7 @@ public function removeIndex($index) {
+    * {@inheritdoc}
+    */
+   public function indexItems(IndexInterface $index, array $items) {
+-    $server_task_manager = \Drupal::getContainer()->get('search_api.server_task_manager');
++    $server_task_manager = Drupal::getContainer()->get('search_api.server_task_manager');
+     if ($server_task_manager->execute($this)) {
+       return $this->getBackend()->indexItems($index, $items);
+     }
+@@ -368,7 +378,7 @@ public function deleteItems(IndexInterface $index, array $item_ids) {
+       return;
+     }
+ 
+-    $server_task_manager = \Drupal::getContainer()->get('search_api.server_task_manager');
++    $server_task_manager = Drupal::getContainer()->get('search_api.server_task_manager');
+     try {
+       if ($server_task_manager->execute($this)) {
+         $this->getBackend()->deleteItems($index, $item_ids);
+@@ -384,7 +394,7 @@ public function deleteItems(IndexInterface $index, array $item_ids) {
+       $this->logException($e, '%type while deleting items from server %server: @message in %function (line %line of %file).', $vars);
+     }
+ 
+-    $task_manager = \Drupal::getContainer()
++    $task_manager = Drupal::getContainer()
+       ->get('search_api.task_manager');
+     $task_manager->addTask(__FUNCTION__, $this, $index, $item_ids);
+   }
+@@ -401,7 +411,7 @@ public function deleteAllIndexItems(IndexInterface $index, $datasource_id = NULL
+       return;
+     }
+ 
+-    $server_task_manager = \Drupal::getContainer()->get('search_api.server_task_manager');
++    $server_task_manager = Drupal::getContainer()->get('search_api.server_task_manager');
+ 
+     if (!$datasource_id) {
+       // If we're deleting all items of the index, there's no point in keeping
+@@ -429,7 +439,7 @@ public function deleteAllIndexItems(IndexInterface $index, $datasource_id = NULL
+       $this->logException($e, '%type while deleting items of index %index from server %server: @message in %function (line %line of %file).', $vars);
+     }
+ 
+-    $task_manager = \Drupal::getContainer()
++    $task_manager = Drupal::getContainer()
+       ->get('search_api.task_manager');
+     $task_manager->addTask(__FUNCTION__, $this, $index, $datasource_id);
+   }
+@@ -464,7 +474,7 @@ public function deleteAllItems() {
+       'deleteItems',
+       'deleteAllIndexItems',
+     ];
+-    \Drupal::getContainer()
++    Drupal::getContainer()
+       ->get('search_api.server_task_manager')
+       ->delete($this, NULL, $types);
+   }
+@@ -500,7 +510,7 @@ public function preSave(EntityStorageInterface $storage) {
+       if (isset($overrides['backend'])) {
+         $backend_id = $overrides['backend'];
+       }
+-      $backend_plugin_manager = \Drupal::service('plugin.manager.search_api.backend');
++      $backend_plugin_manager = Drupal::service('plugin.manager.search_api.backend');
+       $backend_config['#server'] = $this;
+       if (!($backend = $backend_plugin_manager->createInstance($backend_id, $backend_config))) {
+         $label = $this->label();
+@@ -565,7 +575,7 @@ public static function preDelete(EntityStorageInterface $storage, array $entitie
+       if ($server->hasValidBackend()) {
+         $server->getBackend()->preDelete();
+       }
+-      \Drupal::getContainer()->get('search_api.server_task_manager')->delete($server);
++      Drupal::getContainer()->get('search_api.server_task_manager')->delete($server);
+     }
+   }
+ 
+@@ -618,4 +628,18 @@ public function __clone() {
+     $this->backendPlugin = NULL;
+   }
+ 
++
++  /**
++  * overriden for config update :)
++  * {@inheritdoc}
++  */
++  public static function load($id) {
++    $entity_type_repository = Drupal::service('entity_type.repository');
++    $entity_type_manager = Drupal::entityTypeManager();
++    $storage = $entity_type_manager->getStorage($entity_type_repository->getEntityTypeFromClass(static::class));
++    $server = $storage->load($id);
++    // update data from settings if exists
++    $server->setBackendConfig($server->getBackendConfig());
++    return $server;
++  }
+ }
