@@ -81,13 +81,14 @@ Because we can't create gists for the organisation
 
 
 ## Other:
-| Title                     | Description                                     | Link                                                                                     |
-|---------------------------|-------------------------------------------------|------------------------------------------------------------------------------------------|
-| AWS help                  | Various instructions for AWS                    | [open](https://github.com/MantaRayMedia/gists/blob/master/Other/aws.md)                  |
-| Node and npm errors       | Help scripts about errors                       | [open](https://github.com/MantaRayMedia/gists/blob/master/Other/npm-errors.md)           |
-| Configuring Solr on Lando | Instructions to get it working on any Lando box | [open](https://github.com/MantaRayMedia/gists/blob/master/Other/solr-configuration.md)   |
-| Lando stuff               | Lando configurations                            | [open](https://github.com/MantaRayMedia/gists/blob/master/Lando.md)                      |
-| OpenVPN AWS               | Setting new users for VPN                       | [open](https://github.com/MantaRayMedia/gists/blob/master/OpenVPN.md)                    |
-| Sitemap cache warmer      | Rebuild cache for pages from sitemap            | [open](https://github.com/MantaRayMedia/gists/blob/master/Code/sitemap_cache_warmer.php) |
-| SSH on Lando              | Instructions to get it working on any box       | [open](https://github.com/MantaRayMedia/gists/blob/master/Lando/ssl.md)                  |
-| Setting up Remora         | An automated script to setup Remora9 sites      | [open](https://github.com/MantaRayMedia/gists/blob/master/Remora8/Setup.md)              |
+| Title                     | Description                                     | Link                                                                                          |
+|---------------------------|-------------------------------------------------|-----------------------------------------------------------------------------------------------|
+| AWS help                  | Various instructions for AWS                    | [open](https://github.com/MantaRayMedia/gists/blob/master/Other/aws.md)                       |
+| AWS CloudFront            | Add missing cached Behaviors                    | [open](https://github.com/MantaRayMedia/gists/blob/master/Code/aws-cf-behaviors/Behaviors.md) |
+| Node and npm errors       | Help scripts about errors                       | [open](https://github.com/MantaRayMedia/gists/blob/master/Other/npm-errors.md)                |
+| Configuring Solr on Lando | Instructions to get it working on any Lando box | [open](https://github.com/MantaRayMedia/gists/blob/master/Other/solr-configuration.md)        |
+| Lando stuff               | Lando configurations                            | [open](https://github.com/MantaRayMedia/gists/blob/master/Lando.md)                           |
+| OpenVPN AWS               | Setting new users for VPN                       | [open](https://github.com/MantaRayMedia/gists/blob/master/OpenVPN.md)                         |
+| Sitemap cache warmer      | Rebuild cache for pages from sitemap            | [open](https://github.com/MantaRayMedia/gists/blob/master/Code/sitemap_cache_warmer.php)      |
+| SSH on Lando              | Instructions to get it working on any box       | [open](https://github.com/MantaRayMedia/gists/blob/master/Lando/ssl.md)                       |
+| Setting up Remora         | An automated script to setup Remora9 sites      | [open](https://github.com/MantaRayMedia/gists/blob/master/Remora8/Setup.md)                   |
