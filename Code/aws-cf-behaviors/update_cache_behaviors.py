@@ -28,16 +28,19 @@ def behavior_exists(existing_behaviors, new_behavior):
 
 
 def build_behavior(conf):
+    allowed_methods = conf.get("AllowedMethods", ["HEAD", "GET", "OPTIONS"])
+    cached_methods = conf.get("CachedMethods", ["HEAD", "GET"])
+
     behavior = {
         "PathPattern": conf["PathPattern"],
         "TargetOriginId": conf["TargetOriginId"],
         "ViewerProtocolPolicy": conf["ViewerProtocolPolicy"],
         "AllowedMethods": {
-            "Quantity": 3,
-            "Items": ["HEAD", "GET", "OPTIONS"],
+            "Quantity": len(allowed_methods),
+            "Items": allowed_methods,
             "CachedMethods": {
-                "Quantity": 2,
-                "Items": ["HEAD", "GET"]
+                "Quantity": len(cached_methods),
+                "Items": cached_methods
             }
         },
         "Compress": conf.get("Compress", False),

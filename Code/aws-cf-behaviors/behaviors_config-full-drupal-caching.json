@@ -1,0 +1,53 @@
+[
+  {
+    "PathPattern": "/admin/*",
+    "TargetOriginId": "ELBOrigin",
+    "ViewerProtocolPolicy": "redirect-to-https",
+    "CachePolicyId": "1d6d37b6-03cf-4d4b-8119-7bd78a6ff9f0",
+    "OriginRequestPolicyId": "059aae22-e73a-41c6-9eb6-97aaafaf29a4",
+    "Compress": true,
+    "AllowedMethods": ["HEAD", "GET", "OPTIONS", "POST", "PUT", "PATCH", "DELETE"]
+  },
+  {
+    "PathPattern": "/user/*",
+    "TargetOriginId": "ELBOrigin",
+    "ViewerProtocolPolicy": "redirect-to-https",
+    "CachePolicyId": "1d6d37b6-03cf-4d4b-8119-7bd78a6ff9f0",
+    "OriginRequestPolicyId": "059aae22-e73a-41c6-9eb6-97aaafaf29a4",
+    "Compress": true,
+    "AllowedMethods": ["HEAD", "GET", "OPTIONS", "POST", "PUT", "PATCH", "DELETE"]
+  },
+  {
+    "PathPattern": "/*.js",
+    "TargetOriginId": "ELBOrigin",
+    "ViewerProtocolPolicy": "redirect-to-https",
+    "CachePolicyId": "658327ea-f89d-4fab-a63d-7e88639e58f6",
+    "OriginRequestPolicyId": "216adef6-5c7f-47e4-b989-5492eafa07d3",
+    "Compress": true
+  },
+  {
+    "PathPattern": "/*.css",
+    "TargetOriginId": "ELBOrigin",
+    "ViewerProtocolPolicy": "redirect-to-https",
+    "CachePolicyId": "658327ea-f89d-4fab-a63d-7e88639e58f6",
+    "OriginRequestPolicyId": "216adef6-5c7f-47e4-b989-5492eafa07d3",
+    "Compress": true
+  },
+  {
+    "PathPattern": "/sites/default/files/styles/*",
+    "TargetOriginId": "ELBOrigin",
+    "ViewerProtocolPolicy": "redirect-to-https",
+    "CachePolicyId": "658327ea-f89d-4fab-a63d-7e88639e58f6",
+    "OriginRequestPolicyId": "216adef6-5c7f-47e4-b989-5492eafa07d3",
+    "Compress": true
+  },
+  {
+    "PathPattern": "/themes/*",
+    "TargetOriginId": "ELBOrigin",
+    "ViewerProtocolPolicy": "redirect-to-https",
+    "CachePolicyId": "658327ea-f89d-4fab-a63d-7e88639e58f6",
+    "OriginRequestPolicyId": "216adef6-5c7f-47e4-b989-5492eafa07d3",
+    "ResponseHeadersPolicyId": "eaab4381-ed33-4a86-88ca-d9558dc6cd63",
+    "Compress": true
+  }
+]
