@@ -27,13 +27,13 @@ def behavior_exists(existing_behaviors, new_behavior):
     return any(b['PathPattern'] == new_behavior['PathPattern'] for b in existing_behaviors)
 
 
-def build_behavior(conf):
+def build_behavior(conf, target_override=None):
     allowed_methods = conf.get("AllowedMethods", ["HEAD", "GET", "OPTIONS"])
     cached_methods = conf.get("CachedMethods", ["HEAD", "GET"])
 
     behavior = {
         "PathPattern": conf["PathPattern"],
-        "TargetOriginId": conf["TargetOriginId"],
+        "TargetOriginId": target_override or conf["TargetOriginId"],
         "ViewerProtocolPolicy": conf["ViewerProtocolPolicy"],
         "AllowedMethods": {
             "Quantity": len(allowed_methods),
@@ -62,7 +62,7 @@ def build_behavior(conf):
     return behavior
 
 
-def add_behaviors(client, distribution_id, config):
+def add_behaviors(client, distribution_id, config, target_override=None):
     dist_config, etag = get_distribution_config(client, distribution_id)
 
     # Make sure CacheBehaviors and Items are defined properly
@@ -80,7 +80,7 @@ def add_behaviors(client, distribution_id, config):
             continue
 
         print(f"➕ Adding behavior {behavior_conf['PathPattern']}")
-        new_behavior = build_behavior(behavior_conf)
+        new_behavior = build_behavior(behavior_conf, target_override)
         existing_items.append(new_behavior)
         behaviors['Quantity'] = len(existing_items)
 
@@ -101,6 +101,7 @@ def main():
     parser.add_argument("--id", required=True, help="CloudFront distribution ID")
     parser.add_argument("--config", default="behaviors_config.json", help="Path to behaviors config file")
     parser.add_argument("--profile", default=None, help="AWS CLI profile to use")
+    parser.add_argument("--single-app", action="store_true", help="Replace TargetOriginId with LoadBalancerOrigin for single-app mode")
 
     args = parser.parse_args()
 
@@ -108,7 +109,8 @@ def main():
     client = session.client("cloudfront")
 
     config = load_config(args.config)
-    add_behaviors(client, args.id, config)
+    target_override = "LoadBalancerOrigin" if args.single_app else None
+    add_behaviors(client, args.id, config, target_override)
 
 
 if __name__ == "__main__":
