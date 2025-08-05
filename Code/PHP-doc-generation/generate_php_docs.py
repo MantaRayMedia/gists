@@ -81,9 +81,14 @@ def clean_docblock(docblock: str):
     }
 
 
-def extract_php_class_docblocks(file_content):
-    class_pattern = re.compile(
-        r"/\*\*(.*?)\*/\s*(?:abstract\s+)?(?:final\s+)?class\s+(\w+)\s*(?:extends\s+\w+)?\s*\{",
+def extract_php_definitions(file_content):
+    """
+    Extracts classes, interfaces, and traits with optional docblocks.
+    """
+    definition_pattern = re.compile(
+        r"(?:/\*\*(.*?)\*/\s*)?"
+        r"(?:abstract\s+|final\s+)?"
+        r"(class|interface|trait)\s+(\w+)\s*(?:extends\s+\w+)?(?:\s+implements\s+[\w\\, ]+)?\s*\{",
         re.DOTALL | re.MULTILINE
     )
 
@@ -92,26 +97,25 @@ def extract_php_class_docblocks(file_content):
         re.DOTALL | re.MULTILINE
     )
 
-    classes = []
+    definitions = []
 
-    for class_match in class_pattern.finditer(file_content):
-        class_doc, class_name = class_match.groups()
-        class_clean = clean_docblock(class_doc)
+    for match in definition_pattern.finditer(file_content):
+        docblock, def_type, name = match.groups()
+        description = clean_docblock(docblock)['description'] if docblock else '_No description available._'
 
-        class_start = class_match.end()
+        start = match.end()
         brace_count = 1
-        index = class_start
+        index = start
         while brace_count > 0 and index < len(file_content):
             if file_content[index] == '{':
                 brace_count += 1
             elif file_content[index] == '}':
                 brace_count -= 1
             index += 1
-
-        class_body = file_content[class_start:index]
+        body = file_content[start:index]
 
         methods = []
-        for method_match in method_pattern.finditer(class_body):
+        for method_match in method_pattern.finditer(body):
             method_doc, visibility, static_kw, method_name, _ = method_match.groups()
             method_clean = clean_docblock(method_doc)
 
@@ -123,13 +127,14 @@ def extract_php_class_docblocks(file_content):
                 'returns': method_clean['returns']
             })
 
-        classes.append({
-            'name': class_name,
-            'description': class_clean['description'],
+        definitions.append({
+            'type': def_type,  # "class", "interface", or "trait"
+            'name': name,
+            'description': description,
             'methods': methods
         })
 
-    return classes
+    return definitions
 
 
 def scan_module(module_path):
@@ -153,7 +158,7 @@ def scan_module(module_path):
             if file.endswith(('.php', '.module', '.install')):
                 with open(os.path.join(root, file), 'r', encoding='utf-8', errors='ignore') as f:
                     content = f.read()
-                    classes = extract_php_class_docblocks(content)
+                    classes = extract_php_definitions(content)
                     result['classes'].extend(classes)
 
     readme = extract_readme(module_path)
@@ -210,7 +215,7 @@ def write_markdown(output_dir, module_name, data):
             f.write("## Table of Contents\n\n")
             for cls in data['classes']:
                 cls_anchor = slugify(cls['name'])
-                f.write(f"- [{cls['name']}](#{cls_anchor})\n")
+                f.write(f"- [{cls['type'].capitalize()} `{cls['name']}`](#{cls_anchor})\n")
                 if cls['methods']:
                     for method in cls['methods']:
                         method_anchor = slugify(method['name'], is_method=True)
@@ -222,7 +227,7 @@ def write_markdown(output_dir, module_name, data):
             f.write("## Classes\n\n")
             for cls in data['classes']:
                 cls_anchor = slugify(cls['name'])
-                f.write(f"### {cls['name']}\n\n")
+                f.write(f"### {cls['type'].capitalize()} `{cls['name']}`\n\n")
                 f.write(f"{cls['description']}\n\n")
 
                 if cls['methods']:
@@ -287,6 +292,6 @@ if __name__ == "__main__":
 
     # Compute defaults based on target
     source = args.source or os.path.join(args.target, 'web', 'modules', 'custom')
-    output = args.output or os.path.join(args.target, '.docs')
+    output = args.output or os.path.join(args.target, 'docs')
 
     main(source, output)
