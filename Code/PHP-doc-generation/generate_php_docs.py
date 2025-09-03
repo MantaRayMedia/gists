@@ -648,12 +648,9 @@ def write_markdown(output_dir, filename, data, file_path=None):
 
 
 def copy_project_readme(target_dir, output_dir):
-    """Copy the main project README.md and create overview.md"""
+    """Copy from main project README.md and create overview.md"""
     main_readme = os.path.join(target_dir, 'README.md')
     if os.path.exists(main_readme):
-        # Copy the original README
-        shutil.copy2(main_readme, os.path.join(output_dir, 'README.md'))
-
         # Create overview.md with the content (without the main title)
         with open(main_readme, 'r', encoding='utf-8') as f:
             lines = f.readlines()
@@ -668,18 +665,18 @@ def copy_project_readme(target_dir, output_dir):
         print("Copied project README and created overview.md")
 
 
-def main(target_dir, source_subdir, output_dir, is_drupal=False):
+def main(target_dir, source_subdir, output_subdir, is_drupal=False):
     source_dir = os.path.join(target_dir, source_subdir)
 
     if not os.path.exists(source_dir):
         print(f"Error: Source directory '{source_dir}' does not exist")
         exit(1)
 
-    if not os.path.exists(output_dir):
-        os.makedirs(output_dir)
+    if not os.path.exists(output_subdir):
+        os.makedirs(output_subdir)
 
     # Copy project README if it exists
-    copy_project_readme(target_dir, output_dir)
+    copy_project_readme(target_dir, output_subdir)
 
     # For Drupal, scan each module directory
     if is_drupal:
@@ -693,7 +690,7 @@ def main(target_dir, source_subdir, output_dir, is_drupal=False):
                 continue
 
             filename = f"{module}.md"
-            write_markdown(output_dir, filename, data)
+            write_markdown(output_subdir, filename, data)
             print(f"Generated: {filename}")
 
     else:
@@ -718,7 +715,7 @@ def main(target_dir, source_subdir, output_dir, is_drupal=False):
                             }
 
                             filename = generate_filename_from_path(relative_path)
-                            write_markdown(output_dir, filename, data, file_path=relative_path)
+                            write_markdown(output_subdir, filename, data, file_path=relative_path)
                             print(f"Generated: {filename} (from {relative_path})")
 
             # Also scan each subdirectory for README and classes
@@ -729,7 +726,7 @@ def main(target_dir, source_subdir, output_dir, is_drupal=False):
                 if data['classes']:
                     relative_dir = os.path.relpath(dir_path, source_dir)
                     filename = generate_filename_from_path(relative_dir) if relative_dir != '.' else 'index.md'
-                    write_markdown(output_dir, filename, data)
+                    write_markdown(output_subdir, filename, data)
                     print(f"Generated: {filename} (from directory {relative_dir})")
 
 
