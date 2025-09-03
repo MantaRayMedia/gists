@@ -1,5 +1,5 @@
 # PHP Markdown documentation generator
-Script to generate docs from PHPDoc and comments
+Script to generate docs from PHPDoc and comments for Drupal or non-drupal projects.
 
 ## Installation
 - clone the repository
@@ -9,13 +9,16 @@ Script to generate docs from PHPDoc and comments
 - install the required packages with `pip install -r requirements.txt`
 - run the script:
 ```shell
-# example with target only
-python generate_php_docs.py --target /home/user/projects/MRM/espen-remora
-
-# example with overridden parameters
+# example for Drupal
 python generate_php_docs.py \
-  --target /home/user/projects/MRM/espen-remora \
-  --source /home/user/projects/MRM/espen-remora/web/modules/custom \
-  --output /home/user/projects/MRM/espen-remora/.docs
+  --drupal \
+  --target=/home/user/projects/MRM/espen-remora \
+  --source=web/modules/custom
+
+# example with overridden parameters and/or non-drupal project
+python generate_php_docs.py \
+  --target=/home/user/projects/MRM/iu-planner \
+  --source=src \
+  --output=docs-non-standard
 ```
 - when done, exit virtual environment with typing `deactivate`
