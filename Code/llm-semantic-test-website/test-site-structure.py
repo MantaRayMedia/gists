@@ -12,6 +12,9 @@ Usage:
     python web_audit.py https://example.com
     python web_audit.py https://example.com --model llama3.2:3b --out-dir reports/
     python web_audit.py https://example.com --no-cache --max-regions 6
+
+    python web_audit.py https://example.com --profile remora
+    python web_audit.py https://example.com --profile-file my_remora_tuned.json
 """
 
 import argparse
@@ -275,7 +278,135 @@ def audit_structure(soup: BeautifulSoup) -> list:
     return findings
 
 
-def extract_dom(html: str) -> dict:
+# =========================================================
+# STRUCTURE PROFILES
+# (opt-in, theme/CMS-specific region checks on top of the
+# universal audit_structure() rules above)
+# =========================================================
+
+# A profile is just data: a name, a list of selector-based presence rules,
+# and a list of DOM-order rules. The engine below (run_profile) is generic
+# -- it doesn't know anything about Drupal or Remora specifically. New
+# profiles can be added here, or loaded from an external JSON file via
+# --profile-file, without touching the matching logic.
+#
+# Rule fields:
+#   id        - short label, shown in output
+#   selector  - any CSS selector BeautifulSoup's .select() supports
+#   required  - True: flag if NOT found. False: just informational presence note.
+#   severity  - "critical" | "moderate" | "minor" (used when required and missing)
+#   message   - shown when the rule fails
+#
+# Order-check fields:
+#   before / after - CSS selectors; the FIRST match of `before` must appear
+#                    earlier in the HTML source than the first match of `after`
+#   message         - shown when the order is violated
+
+PROFILES = {
+    "generic": {
+        "name": "generic",
+        "rules": [],
+        "order_checks": [],
+    },
+    # STARTER profile based on the Remora region structure as described --
+    # NOT verified against actual rendered markup with real data-region/
+    # aria-label attributes (only checked via a markdown-converted fetch,
+    # which strips attributes). Treat this as a template: run it, see what
+    # it flags, and adjust selectors/requiredness to match what your
+    # templates actually output. Easiest way to iterate: copy this dict (or
+    # export it) to a JSON file and pass --profile-file, rather than
+    # editing the script each time.
+    "remora": {
+        "name": "remora",
+        "rules": [
+            {"id": "header", "selector": "header", "required": True, "severity": "moderate",
+             "message": "No <header> region found."},
+            {"id": "menu_primary", "selector": "header nav[aria-label], header nav[aria-labelledby]",
+             "required": False, "severity": "minor",
+             "message": "Header has no labeled primary/secondary menu <nav>."},
+            {"id": "breadcrumbs", "selector": "[aria-label*='breadcrumb' i], .breadcrumb, [class*='breadcrumb' i]",
+             "required": False, "severity": "minor",
+             "message": "No breadcrumb element found in header."},
+            {"id": "hero", "selector": "[data-region='hero'], [class*='hero' i]",
+             "required": False, "severity": "minor",
+             "message": "No element tagged as the hero region (data-region='hero' or class containing 'hero')."},
+            {"id": "main", "selector": "main", "required": True, "severity": "critical",
+             "message": "No <main> region for primary content."},
+            {"id": "postscript", "selector": "section[data-region='postscript'], section[aria-label*='additional' i]",
+             "required": False, "severity": "minor",
+             "message": "No postscript <section> (expected data-region='postscript' or a labeled aria-label)."},
+            {"id": "aside", "selector": "aside", "required": False, "severity": "minor",
+             "message": "No <aside> sidebar region found (fine if this page has none by design)."},
+            {"id": "footer", "selector": "footer", "required": True, "severity": "moderate",
+             "message": "No <footer> region found."},
+            {"id": "footer_secondary",
+             "selector": "[data-region='footer-secondary'], [aria-label*='additional footer' i]",
+             "required": False, "severity": "minor",
+             "message": "No footer-secondary region found (expected data-region='footer-secondary' "
+                        "with an aria-label)."},
+        ],
+        "order_checks": [
+            {"before": "main", "after": "aside",
+             "message": "<main> should appear before <aside> in HTML source order, even if CSS "
+                        "repositions it visually -- helps assistive tech and extractors treat it "
+                        "as primary content."},
+        ],
+    },
+}
+
+
+def load_profile(profile_name: str, profile_file: str = None) -> dict:
+    """Loads a profile by name from PROFILES, or from an external JSON file
+    if provided (the JSON file should have the same shape as the dicts in
+    PROFILES above). External file takes precedence if given."""
+    if profile_file:
+        with open(profile_file, "r", encoding="utf-8") as f:
+            return json.load(f)
+    if profile_name not in PROFILES:
+        print(f"WARNING: unknown profile '{profile_name}', falling back to 'generic'")
+        return PROFILES["generic"]
+    return PROFILES[profile_name]
+
+
+def run_profile(soup: BeautifulSoup, profile: dict) -> list:
+    """Generic engine: runs a profile's selector-presence rules and DOM-
+    order rules against soup. Knows nothing about any specific CMS/theme --
+    all of that lives in the profile data itself."""
+    findings = []
+
+    for rule in profile.get("rules", []):
+        try:
+            matches = soup.select(rule["selector"])
+        except Exception as e:
+            findings.append({"severity": "minor", "message": f"Profile rule '{rule['id']}' has an invalid selector: {e}"})
+            continue
+        if matches:
+            continue
+        if rule.get("required"):
+            findings.append({"severity": rule.get("severity", "minor"), "message": rule["message"]})
+        else:
+            # Optional rules still surface when missing, just at info level --
+            # otherwise a required=False rule produces no output ever, which
+            # makes it pointless to have in the profile at all.
+            findings.append({"severity": "info", "message": f"[{rule['id']}] {rule['message']}"})
+
+    for check in profile.get("order_checks", []):
+        try:
+            before_el = soup.select_one(check["before"])
+            after_el = soup.select_one(check["after"])
+        except Exception:
+            continue
+        if before_el is None or after_el is None:
+            continue  # presence rules above already cover "missing entirely"
+        before_pos = (before_el.sourceline or 0, before_el.sourcepos or 0)
+        after_pos = (after_el.sourceline or 0, after_el.sourcepos or 0)
+        if before_pos > after_pos:
+            findings.append({"severity": "minor", "message": check["message"]})
+
+    return findings
+
+
+def extract_dom(html: str, profile_name: str = "generic", profile_file: str = None) -> dict:
     soup = BeautifulSoup(html, "html.parser")
 
     # Structured data and the structure audit need the FULL document
@@ -283,6 +414,10 @@ def extract_dom(html: str) -> dict:
     # extract both before sanitize() and before we narrow to body-only.
     structured_data = extract_structured_data(soup)
     structure_findings = audit_structure(soup)
+
+    if profile_name != "generic" or profile_file:
+        profile = load_profile(profile_name, profile_file)
+        structure_findings = structure_findings + run_profile(soup, profile)
 
     soup = sanitize(soup)
 
@@ -1122,6 +1257,7 @@ def analyze_page(
 def build_markdown(
         url: str, title: str, result: dict, regions: list, metrics: dict,
         structured_data: dict, structure_findings: list, model: str, generated_at: str,
+        profile_name: str = "generic",
 ) -> str:
     md = []
 
@@ -1260,7 +1396,9 @@ def build_markdown(
     # STRUCTURAL BEST PRACTICES (deterministic, rule-based -- see audit_structure())
     # ----------------------------
     md.append("\n---\n## Structural Best Practices\n")
-    md.append("*(Rule-based checks, not LLM-judged -- exact and reproducible every run.)*\n")
+    profile_note = f" + '{profile_name}' profile" if profile_name != "generic" else ""
+    md.append(f"*(Rule-based checks, not LLM-judged -- exact and reproducible every run. "
+              f"Universal checks{profile_note}.)*\n")
     for level in ["critical", "moderate", "minor"]:
         level_findings = [f for f in structure_findings if f["severity"] == level]
         if level_findings:
@@ -1296,12 +1434,14 @@ def run(
         out_dir: str,
         temperature: float = 0.4,
         strict_json: bool = False,
+        profile_name: str = "generic",
+        profile_file: str = None,
 ) -> Path:
     print("Fetching:", url)
     html = fetch_html(url, timeout=timeout, use_cache=use_cache)
 
     print("DOM extraction")
-    extracted = extract_dom(html)
+    extracted = extract_dom(html, profile_name=profile_name, profile_file=profile_file)
 
     print("Metrics")
     metrics = compute_metrics(extracted["dom"])
@@ -1341,6 +1481,7 @@ def run(
         structure_findings=extracted["structure_findings"],
         model=model,
         generated_at=generated_at.isoformat(),
+        profile_name=profile_name if not profile_file else f"custom ({profile_file})",
     )
     path.write_text(md, encoding="utf-8")
 
@@ -1376,6 +1517,16 @@ def main():
         help="Re-enable Ollama's format=\"json\" grammar-constrained decoding "
              "(guarantees valid JSON syntax but tends to thin out content on small models)",
     )
+    parser.add_argument(
+        "--profile", default="generic", choices=sorted(PROFILES.keys()),
+        help=f"Structure profile for theme/CMS-specific region checks (default: generic). "
+             f"Available: {', '.join(sorted(PROFILES.keys()))}",
+    )
+    parser.add_argument(
+        "--profile-file", default=None,
+        help="Path to a custom JSON profile (same shape as PROFILES entries in the script). "
+             "Overrides --profile if given.",
+    )
     args = parser.parse_args()
 
     run(
@@ -1388,6 +1539,8 @@ def main():
         out_dir=args.out_dir,
         temperature=args.temperature,
         strict_json=args.strict_json,
+        profile_name=args.profile,
+        profile_file=args.profile_file,
     )
 
 
