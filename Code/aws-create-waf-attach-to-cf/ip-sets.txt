@@ -1,0 +1,22 @@
+[
+    {
+        "Name": "Allowlist",
+        "ARN": "arn:aws:wafv2:eu-west-1:691639156536:regional/ipset/Allowlist/7e707558-0ac2-455e-8679-576ca27fb0e9"
+    },
+    {
+        "Name": "Blacklist",
+        "ARN": "arn:aws:wafv2:eu-west-1:691639156536:regional/ipset/Blacklist/820aa7ac-061c-4e2d-be1e-3f93043720f3"
+    },
+    {
+        "Name": "Blacklist6",
+        "ARN": "arn:aws:wafv2:eu-west-1:691639156536:regional/ipset/Blacklist6/078ca94f-1363-420c-b8f6-b1e0910dae4f"
+    },
+    {
+        "Name": "Google-botlist",
+        "ARN": "arn:aws:wafv2:eu-west-1:691639156536:regional/ipset/Google-botlist/6e6f247f-cb45-449e-a0e0-e693b00ee9f6"
+    },
+    {
+        "Name": "StatusCake-IPs",
+        "ARN": "arn:aws:wafv2:eu-west-1:691639156536:regional/ipset/StatusCake-IPs/1f3d6b46-150c-4cba-8ccb-960f0b3bfbc5"
+    }
+]
