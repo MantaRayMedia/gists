@@ -13,6 +13,8 @@ Usage:
     python web_audit.py https://example.com --model llama3.2:3b --out-dir reports/
     python web_audit.py https://example.com --no-cache --max-regions 6
 
+    python web_audit.py https://example.com --deep-ai-check
+
     python web_audit.py https://example.com --profile remora
     python web_audit.py https://example.com --profile-file my_remora_tuned.json
 """
@@ -30,6 +32,7 @@ from urllib.parse import urlparse
 import ollama
 import requests
 from bs4 import BeautifulSoup, Comment, NavigableString, Tag
+from json_repair import repair_json
 
 # Deeply nested page builders (Wix/Squarespace-style markup) can exceed
 # Python's default recursion limit during DOM serialization.
@@ -497,6 +500,37 @@ def _count_tag(node, tag_name: str) -> int:
     return count
 
 
+_HEADING_TAGS = ("h1", "h2", "h3", "h4", "h5", "h6")
+
+
+def extract_heading_outline(dom, max_headings: int = 40) -> list:
+    """Returns the page's heading hierarchy in document order, e.g.
+    [{"level": 1, "text": "Welcome"}, {"level": 2, "text": "Our services"}].
+    This is the structural skeleton handed to the AI-parseability pass --
+    deliberately NOT the prose itself, since that pass judges structure
+    (does the outline make sense as a table of contents, is chrome cleanly
+    separated from content), not writing quality (which the readability
+    pass already covers)."""
+    outline = []
+
+    def walk(node):
+        if not node or node["type"] == "text" or len(outline) >= max_headings:
+            return
+        name = node.get("name", "")
+        if name in _HEADING_TAGS:
+            parts = []
+            _collect_text(node, parts)
+            text = " ".join(parts).strip()
+            if text:
+                outline.append({"level": int(name[1]), "text": text[:120]})
+            return  # heading tags don't nest further headings inside them
+        for c in node.get("children", []):
+            walk(c)
+
+    walk(dom)
+    return outline
+
+
 _CHROME_TAGS = {"nav", "header", "footer", "aside", "form", "button", "label", "script", "style"}
 
 # Matches leaked PHP/Symfony VarDumper-style debug output, e.g. a Twig
@@ -868,6 +902,102 @@ def build_global_issues_prompt() -> str:
     )
 
 
+# =========================================================
+# OPTIONAL THIRD PASS: AI structural parseability
+# (distinct from ai_score in the readability pass, which judges
+# PROSE clarity -- this judges whether the page's STRUCTURE, given
+# as a skeleton rather than prose, would parse cleanly for an
+# AI/RAG extractor: heading hierarchy logic, content/chrome
+# separation, and structured-data-vs-content consistency.)
+# =========================================================
+
+AI_PARSE_EXAMPLE = """{
+  "ai_parse_score": 4,
+  "ai_parse_summary": "The heading outline jumps from h1 straight to h4 twice, which suggests headings were chosen for visual size rather than logical document structure -- a parser building a table of contents from headings alone would get a flat, unhelpful outline. The JSON-LD declares this as a Product page, but every region (long-form article body, author byline region, related-reading section) reads like a blog post, not a product page -- those two signals conflict.",
+  "problems": [
+    {"issue": "Heading levels skip from h1 to h4 in two places, flattening the logical outline", "fix": "Use h2 for top-level sections and h3 for subsections instead of jumping straight to h4"},
+    {"issue": "JSON-LD @type (Product) doesn't match the actual page content (a blog article)", "fix": "Change the JSON-LD @type to Article/BlogPosting, or add a separate WebPage entity if Product is needed for another purpose"}
+  ]
+}"""
+
+
+def build_ai_parse_prompt(title: str, heading_outline: list, regions: list, structured_data: dict) -> str:
+    outline_text = "\n".join(f"{'  ' * (h['level'] - 1)}H{h['level']}: {h['text']}" for h in heading_outline) or "(no headings found)"
+    region_summary = "\n".join(f"- {r['region_id']} ({r['tag']}): {r['word_count']} words, {r['link_count']} links" for r in regions) or "(no regions found)"
+    structured_summary = summarize_structured_data(structured_data)
+    return (
+        "You are auditing how well an AI agent or RAG system would be able to PARSE this "
+        "page's STRUCTURE -- not whether the writing is good (that's judged separately). "
+        f"Page title: {title!r}\n\n"
+        "Heading outline, in document order (this is the skeleton a parser would build a "
+        "table of contents from):\n"
+        f"{outline_text}\n\n"
+        "Page regions (tag + size, not content):\n"
+        f"{region_summary}\n\n"
+        f"Structured data found:\n{structured_summary}\n\n"
+        "Judge ONLY structural parseability: does the heading outline make logical sense as a "
+        "table of contents (no illogical skips, no flat walls of same-level headings that should "
+        "be nested)? Is content cleanly separated from chrome (nav/footer) by the regions above? "
+        "Does the structured data's declared type match what the regions suggest this page "
+        "actually is? Each one is checkable from what's given above -- do not comment on prose "
+        "quality, grammar, or tone.\n\n"
+        "Here is an EXAMPLE response for a different, unrelated page -- do not reuse its wording "
+        "or its specific issues:\n\n"
+        f"{AI_PARSE_EXAMPLE}\n\n"
+        "Now write your own JSON object in the exact same shape, based on the actual outline/"
+        "regions/structured-data above. If there's truly nothing structurally wrong, say so and "
+        "leave problems as an empty list -- don't invent issues that aren't there. "
+        "Return ONLY the JSON object, no commentary, no markdown fences."
+    )
+
+
+_AI_PARSE_REQUIRED = ("ai_parse_score", "ai_parse_summary", "problems")
+_AI_PARSE_ECHO_STRINGS = {
+    "Heading levels skip from h1 to h4 in two places, flattening the logical outline",
+    "Use h2 for top-level sections and h3 for subsections instead of jumping straight to h4",
+    "JSON-LD @type (Product) doesn't match the actual page content (a blog article)",
+    "Change the JSON-LD @type to Article/BlogPosting, or add a separate WebPage entity if Product is needed for another purpose",
+}
+
+
+def _is_low_effort_ai_parse(result: dict) -> bool:
+    if not isinstance(result, dict):
+        return True
+    if any(k not in result for k in _AI_PARSE_REQUIRED):
+        return True
+
+    summary = result.get("ai_parse_summary", "")
+    has_prose = isinstance(summary, str) and len(summary.strip()) > 15
+    if not has_prose:
+        return True  # the prompt explicitly asks for a real summary even on a clean page
+
+    problems = result.get("problems", [])
+    if any(p.get("issue", "") in _AI_PARSE_ECHO_STRINGS for p in problems if isinstance(p, dict)):
+        return True
+
+    # The exact failure seen in practice: the model echoes the example's
+    # SHAPE (a 2-item problems list) without filling in content -- a score
+    # and an empty summary aren't enough to catch this; each entry needs
+    # to actually say something.
+    if any(
+            isinstance(p, dict) and not (p.get("issue", "").strip() or p.get("fix", "").strip())
+            for p in problems
+    ):
+        return True
+
+    return False
+
+
+def _clean_ai_parse_problems(problems) -> list:
+    """Defensive cleanup, same pattern as _clean_global_issues: strip any
+    blank-shell problem entries even if one slips through validation after
+    retries are exhausted, so a rendered report never shows '- [ ]' with
+    nothing after it."""
+    if not isinstance(problems, list):
+        return []
+    return [p for p in problems if isinstance(p, dict) and (p.get("issue", "").strip() or p.get("fix", "").strip())]
+
+
 def extract_json_block(text: str) -> str:
     """Strip markdown code fences and isolate the outermost JSON value
     (object OR array), since models often wrap JSON in commentary or
@@ -1063,6 +1193,22 @@ def _chat_json_with_repair(model, messages, num_predict, temperature, strict_jso
             parsed = json.loads(candidate)
             return parsed, messages + [{"role": "assistant", "content": text}]
         except json.JSONDecodeError as e:
+            # Common failure mode: the model echoes real page text containing
+            # a literal " character (a quoted testimonial, a caption) into a
+            # JSON string without escaping it -- breaks the parser exactly
+            # like this ("Expecting ',' delimiter" or "Extra data", depending
+            # on where the unescaped quote falls). Before spending a retry
+            # round-trip asking the model to fix itself, try a deterministic
+            # repair pass -- free, no extra latency, and this is exactly the
+            # failure mode json_repair is built to recover from.
+            try:
+                repaired = repair_json(candidate)
+                parsed = json.loads(repaired)
+                print(f"  JSON parse failed but json_repair recovered it (attempt {attempt + 1}/{max_retries + 1})")
+                return parsed, messages + [{"role": "assistant", "content": text}]
+            except (json.JSONDecodeError, ValueError):
+                pass
+
             print(f"  JSON parse failed (attempt {attempt + 1}/{max_retries + 1}): {e}")
             if attempt == max_retries:
                 return {"parse_error": True, "raw": text}, messages
@@ -1071,8 +1217,10 @@ def _chat_json_with_repair(model, messages, num_predict, temperature, strict_jso
                 {
                     "role": "user",
                     "content": (
-                        f"That was not valid JSON ({e}). Return ONLY the corrected, "
-                        "complete, valid JSON -- no commentary, no markdown fences."
+                        f"That was not valid JSON ({e}). If you're quoting or referencing text "
+                        "from the page that contains a literal \" character, escape it as \\\" "
+                        "inside your JSON strings. Return ONLY the corrected, complete, valid "
+                        "JSON -- no commentary, no markdown fences."
                     ),
                 },
             ]
@@ -1211,8 +1359,10 @@ def analyze_page(
         regions: list,
         metrics_json: str,
         structured_data: dict,
+        heading_outline: list = None,
         temperature: float = 0.4,
         strict_json: bool = False,
+        deep_ai_check: bool = False,
 ) -> dict:
     print("SLM analysis: readability + article detection")
     page_placeholder = looks_like_placeholder_text(text_excerpt)
@@ -1226,14 +1376,28 @@ def analyze_page(
         model, regions, metrics_json, temperature=temperature, strict_json=strict_json,
     )
 
+    ai_parse = {}
+    if deep_ai_check:
+        print("SLM analysis: AI structural parseability (opt-in third pass)")
+        ai_parse = call_llm_json(
+            model, build_ai_parse_prompt(title, heading_outline or [], regions, structured_data),
+            validator=_is_low_effort_ai_parse, temperature=temperature, strict_json=strict_json,
+        )
+
     result = {}
     result.update({k: v for k, v in readability.items() if k not in ("parse_error", "low_effort_warning")})
     result.update({k: v for k, v in heatmap.items() if k not in ("parse_errors", "warnings")})
+    if deep_ai_check:
+        result.update({k: v for k, v in ai_parse.items() if k not in ("parse_error", "low_effort_warning")})
+        if "problems" in result:
+            result["problems"] = _clean_ai_parse_problems(result["problems"])
 
     parse_errors = []
     if readability.get("parse_error"):
         parse_errors.append({"stage": "readability", "raw": readability.get("raw", "")})
     parse_errors.extend(heatmap.get("parse_errors", []))
+    if deep_ai_check and ai_parse.get("parse_error"):
+        parse_errors.append({"stage": "ai_parse", "raw": ai_parse.get("raw", "")})
     if parse_errors:
         result["parse_errors"] = parse_errors
 
@@ -1244,6 +1408,11 @@ def analyze_page(
             "retries -- treat those scores with skepticism."
         )
     warnings.extend(heatmap.get("warnings", []))
+    if deep_ai_check and ai_parse.get("low_effort_warning"):
+        warnings.append(
+            "AI structural parseability pass still looked empty/placeholder-shaped after "
+            "retries -- treat that section with skepticism."
+        )
     if warnings:
         result["warnings"] = warnings
 
@@ -1308,6 +1477,23 @@ def build_markdown(
     md.append(f"- Type: {result.get('page_type')}")
     md.append(f"- Confidence: {result.get('confidence')}")
     md.append(f"- Reasoning: {result.get('reasoning')}")
+
+    # ----------------------------
+    # AI STRUCTURAL PARSEABILITY (opt-in third pass, --deep-ai-check)
+    # ----------------------------
+    if "ai_parse_score" in result:
+        md.append("\n---\n## AI Structural Parseability\n")
+        md.append("*(Judges heading-outline logic, content/chrome separation, and structured-data "
+                  "consistency -- distinct from the AI Readability score above, which judges prose "
+                  "clarity, not structure.)*\n")
+        md.append(f"### Score: {result.get('ai_parse_score', 'N/A')}/10")
+        md.append(f"{result.get('ai_parse_summary', '')}\n")
+        problems = result.get("problems", [])
+        if problems:
+            md.append("#### Structural Problems")
+            for p in problems:
+                md.append(f"- [ ] {p.get('issue')}")
+                md.append(f"  - Fix: {p.get('fix', '')}")
 
     # ----------------------------
     # HEATMAP
@@ -1436,6 +1622,7 @@ def run(
         strict_json: bool = False,
         profile_name: str = "generic",
         profile_file: str = None,
+        deep_ai_check: bool = False,
 ) -> Path:
     print("Fetching:", url)
     html = fetch_html(url, timeout=timeout, use_cache=use_cache)
@@ -1449,6 +1636,7 @@ def run(
     print("Segmenting regions")
     regions = segment_regions(extracted["dom"], max_regions=max_regions)
     text_excerpt = extract_text_excerpt(extracted["dom"], max_chars=text_excerpt_chars)
+    heading_outline = extract_heading_outline(extracted["dom"])
     metrics_json = json.dumps(metrics, indent=2)
 
     result = analyze_page(
@@ -1458,8 +1646,10 @@ def run(
         regions=regions,
         metrics_json=metrics_json,
         structured_data=extracted["structured_data"],
+        heading_outline=heading_outline,
         temperature=temperature,
         strict_json=strict_json,
+        deep_ai_check=deep_ai_check,
     )
 
     print("Markdown build")
@@ -1527,6 +1717,12 @@ def main():
         help="Path to a custom JSON profile (same shape as PROFILES entries in the script). "
              "Overrides --profile if given.",
     )
+    parser.add_argument(
+        "--deep-ai-check", action="store_true",
+        help="Run an additional opt-in pass judging structural AI-parseability (heading outline "
+             "logic, content/chrome separation, structured-data-vs-content consistency) -- a "
+             "third model call, off by default to keep the default run fast.",
+    )
     args = parser.parse_args()
 
     run(
@@ -1541,6 +1737,7 @@ def main():
         strict_json=args.strict_json,
         profile_name=args.profile,
         profile_file=args.profile_file,
+        deep_ai_check=args.deep_ai_check,
     )
 
 
