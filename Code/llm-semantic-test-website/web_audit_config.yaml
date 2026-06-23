@@ -1,0 +1,268 @@
+# =========================================================
+# web_audit_config.yaml
+#
+# All LLM prompts, few-shot examples, feedback messages, and tunable
+# settings for web_audit.py live here instead of inline in the Python
+# code. Edit this file to tune wording/numbers without touching code.
+#
+# Prompt templates use $identifier placeholders (Python string.Template
+# syntax: https://docs.python.org/3/library/string.html#template-strings).
+# This is deliberate, NOT {curly_brace} style -- several of these
+# templates have few-shot examples embedded that are themselves JSON
+# (full of literal { } characters), and {}-style .format() would try to
+# treat every one of those as a substitution field. $-style avoids that
+# entirely, so you can paste a JSON example into this file without
+# escaping anything.
+#
+# echo_strings are the safety net that catches a model copying a few-shot
+# example verbatim instead of analyzing the real page -- they MUST be
+# kept in sync with the example text directly above them. If you edit an
+# example's wording, update its matching echo_strings list too, or the
+# echo detector will silently stop working for that phrase.
+# =========================================================
+
+settings:
+  default_model: "llama3.2:3b"
+  default_timeout: 20
+  default_text_excerpt_chars: 3000
+  default_max_regions: 8
+  default_region_min_chars: 120
+  default_region_excerpt_chars: 280
+  # Raised from the original 3 -- grounding ("every item must trace back
+  # to something already flagged for a region") is what actually prevents
+  # hallucination here, not the numeric cap. The cap mostly just bounds
+  # response size.
+  global_issues_max_critical: 8
+  global_issues_max_moderate: 8
+  global_issues_max_minor: 8
+  global_issues_max_fix_priority: 8
+
+# ---------------------------------------------------------
+# Few-shot examples -- one fully-filled, realistic example per pass,
+# shown to the model so it has a real precedent for "what good analysis
+# looks like" instead of a template of placeholder zeros/empty-strings
+# (which models reliably just copy back unmodified).
+# ---------------------------------------------------------
+examples:
+  readability: |
+    {
+      "page_score": 58,
+      "human_score": 6,
+      "human_summary": "Body copy is clear sentence-by-sentence, but the actual point doesn't show up until several paragraphs of throat-clearing and is interrupted twice by unrelated promo blocks.",
+      "ai_score": 4,
+      "ai_summary": "No clear heading hierarchy separates sections, so an extractor would have a hard time telling promotional asides apart from the actual subject matter.",
+      "is_article": true,
+      "confidence": 0.7,
+      "page_type": "blog",
+      "reasoning": "Has a byline, a publish date, and several paragraphs of prose, but is interrupted by enough non-editorial content that confidence isn't higher.",
+      "top_issue": "Promotional content is interleaved with editorial content with no visual or structural separation.",
+      "top_issue_fix": "Move promotional blocks to a sidebar or clearly-labeled section, separate from the article body."
+    }
+
+  heatmap_entries: |
+    [
+      {"region_id": "r1", "human_readability": 3, "ai_readability": 2, "semantic_quality": 3, "issues": [
+        {"issue": "47 nearly-identical links with no grouping or labeling", "fix": "Group related links under labeled <ul> sections, or collapse into a dropdown"},
+        {"issue": "No aria-label, so a screen reader can't tell this nav apart from any other nav on the page", "fix": "Add an aria-label to the nav element identifying it as the main navigation"}
+      ]},
+      {"region_id": "r2", "human_readability": 8, "ai_readability": 7, "semantic_quality": 8, "issues": [
+        {"issue": "Minor: heading jumps from h1 directly to h4", "fix": "Use h2/h3 for intermediate sections"}
+      ]},
+      {"region_id": "r3", "human_readability": 9, "ai_readability": 8, "semantic_quality": 9, "issues": []}
+    ]
+
+  global_issues: |
+    {
+      "global_issues": {
+        "critical": ["Checkout button has no visible label, only an icon"],
+        "moderate": ["Two different sections use inconsistent date formats (Jan 5 vs 01/05)"],
+        "minor": ["Footer social links open in the same tab instead of a new one"]
+      },
+      "fix_priority": [
+        {"task": "Add a text label or aria-label to the checkout button", "reason": "Screen readers and AI agents currently can't tell what it does"},
+        {"task": "Standardize date formatting across sections", "reason": "Inconsistent formats look unpolished and can confuse date-parsing extractors"}
+      ]
+    }
+
+  ai_parse_1: |
+    {
+      "ai_parse_score": 4,
+      "ai_parse_summary": "The heading outline jumps from h1 straight to h4 twice, which suggests headings were chosen for visual size rather than logical document structure -- a parser building a table of contents from headings alone would get a flat, unhelpful outline. The JSON-LD declares this as a Product page, but every region (long-form article body, author byline region, related-reading section) reads like a blog post, not a product page -- those two signals conflict.",
+      "problems": [
+        {"issue": "Heading levels skip from h1 to h4 in two places, flattening the logical outline", "fix": "Use h2 for top-level sections and h3 for subsections instead of jumping straight to h4"},
+        {"issue": "JSON-LD @type (Product) doesn't match the actual page content (a blog article)", "fix": "Change the JSON-LD @type to Article/BlogPosting, or add a separate WebPage entity if Product is needed for another purpose"}
+      ]
+    }
+
+  ai_parse_2: |
+    {
+      "ai_parse_score": 3,
+      "ai_parse_summary": "There is no h1 anywhere on the page -- every heading is h2, including 'Main navigation', which is a chrome block title, not page content. A parser reading the heading outline alone would treat the nav menu as a content section on equal footing with the real sections, and would have no signal for which heading represents the page's main topic.",
+      "problems": [
+        {"issue": "No h1 element exists on the page at all", "fix": "Add a single h1 representing the page's main topic, distinct from any block/section titles"},
+        {"issue": "The navigation block's title ('Main navigation') is marked up as an h2, mixing chrome with content in the heading outline", "fix": "Make navigation block titles visually-hidden or non-heading text so they don't appear in the document outline alongside real content headings"},
+        {"issue": "All headings are h2 with no h3/h4 nesting despite sections clearly containing sub-items (e.g. a list of dated articles)", "fix": "Use h3 for individual items within a section so the outline reflects the actual content hierarchy"}
+      ]
+    }
+
+# ---------------------------------------------------------
+# Echo-detection safety net. Keep in sync with the examples above --
+# if any of these exact strings show up unmodified in a model response,
+# it's treated as a copy of the example, not real analysis.
+# ---------------------------------------------------------
+echo_strings:
+  global_issues:
+    - "47 nearly-identical links with no grouping or labeling"
+    - "Group related links under labeled <ul> sections, or collapse into a dropdown"
+    - "No aria-label, so a screen reader can't tell this nav apart from any other nav on the page"
+    - "Add an aria-label to the nav element identifying it as the main navigation"
+    - "Minor: heading jumps from h1 directly to h4"
+    - "Use h2/h3 for intermediate sections"
+    - "Checkout button has no visible label, only an icon"
+    - "Two different sections use inconsistent date formats (Jan 5 vs 01/05)"
+    - "Footer social links open in the same tab instead of a new one"
+    - "Add a text label or aria-label to the checkout button"
+    - "Screen readers and AI agents currently can't tell what it does"
+    - "Standardize date formatting across sections"
+    - "Inconsistent formats look unpolished and can confuse date-parsing extractors"
+    - "No <main> landmark wraps the primary content"
+    - "Several buttons have no visible text, only icons"
+    - "Inconsistent date formatting between sections"
+    - "Add a <main> landmark around the primary content"
+    - "Currently nav and content are structurally indistinguishable to assistive tech and extractors"
+    - "Label icon-only buttons"
+    - "Screen readers and AI agents can't tell what they do"
+
+  ai_parse:
+    - "Heading levels skip from h1 to h4 in two places, flattening the logical outline"
+    - "Use h2 for top-level sections and h3 for subsections instead of jumping straight to h4"
+    - "JSON-LD @type (Product) doesn't match the actual page content (a blog article)"
+    - "Change the JSON-LD @type to Article/BlogPosting, or add a separate WebPage entity if Product is needed for another purpose"
+    - "No h1 element exists on the page at all"
+    - "Add a single h1 representing the page's main topic, distinct from any block/section titles"
+    - "The navigation block's title ('Main navigation') is marked up as an h2, mixing chrome with content in the heading outline"
+    - "Make navigation block titles visually-hidden or non-heading text so they don't appear in the document outline alongside real content headings"
+    - "All headings are h2 with no h3/h4 nesting despite sections clearly containing sub-items (e.g. a list of dated articles)"
+    - "Use h3 for individual items within a section so the outline reflects the actual content hierarchy"
+
+# ---------------------------------------------------------
+# Static feedback messages (no dynamic content) for the JSON-validity and
+# generic low-effort retry loops.
+# ---------------------------------------------------------
+feedback:
+  low_effort: |
+    Your previous response was valid JSON but didn't contain real analysis -- fields were empty, zeroed out, or missing entirely instead of reflecting the actual content given earlier in this conversation. Look at that content again and write specific, concrete values referencing what's actually there. Return ONLY the corrected JSON, no commentary, no markdown fences.
+
+  heatmap_entries: |
+    Your previous response had one or both of these problems: (1) some entries were missing numeric human_readability/ai_readability/semantic_quality scores -- every entry needs all three, as numbers 1-10, never omitted; (2) some issue entries were just the region's excerpt text copied back, not an actual diagnosis, or were blank shells with empty issue/fix text -- either identify a real, specific problem, leave the issues list empty for that region, or delete blank entries from it. Return ONLY the corrected JSON array, no commentary, no markdown fences.
+
+  json_invalid_template: |
+    That was not valid JSON ($error). If you're quoting or referencing text from the page that contains a literal " character, escape it as \" inside your JSON strings. Return ONLY the corrected, complete, valid JSON -- no commentary, no markdown fences.
+
+  # Used when the heatmap global-issues stage detects verbatim echoing --
+  # $quoted is built in Python from the specific matched strings (naming
+  # the exact offending phrase works far better than speaking vaguely).
+  echoed_strings_template: |
+    These exact phrases in your last answer are still copied from the example and must ALL be replaced: $quoted. This means more than one field still has the problem -- rewrite your ENTIRE response from scratch, in your own words, based only on the regions you scored above. Do not leave any field unchanged from your previous answer, even ones not listed here. Return ONLY the corrected JSON object, no commentary, no markdown fences.
+
+  # AI-parse pass feedback fragments -- assembled dynamically in Python
+  # (which specific fragments apply depends on what's actually wrong with
+  # the response), but the wording of each fragment lives here.
+  ai_parse_not_dict: |
+    Your previous response wasn't a JSON object with the expected fields. Return ONLY a JSON object with ai_parse_score, ai_parse_summary, and problems. No commentary, no markdown fences.
+
+  ai_parse_summary_missing: "ai_parse_summary is empty or too short -- write at least a sentence describing what you actually see"
+
+  ai_parse_blank_positions_template: |
+    problem entry/entries at position(s) $positions in your list have blank issue/fix text -- either fill them in with a real, specific problem, or DELETE them from the list entirely. The list does not need to match the examples' length -- 0, 1, or any other number is fine.
+
+  ai_parse_echoed_template: 'these exact phrases are copied from the example and must be replaced: $quoted'
+
+  ai_parse_fallback: "Your response still didn't contain real analysis."
+
+  ai_parse_closing: |
+    Keep whatever was already good in your previous answer (e.g. if your summary was accurate, keep it) -- just fix exactly what's listed above. Return ONLY the corrected JSON object, no commentary, no markdown fences.
+
+# ---------------------------------------------------------
+# Main prompt templates. $placeholders are filled in by the corresponding
+# build_*_prompt() function in Python.
+# ---------------------------------------------------------
+prompts:
+  readability: |
+    You are a senior web + AI readability auditor.
+    Page title: $title
+
+    Below is the page's visible text in reading order (it may be truncated if long):
+    ---
+    $text_excerpt
+    ---
+    $placeholder_note
+    Structured data found on this page (already parsed/validated -- use as context, you don't need to re-derive it):
+    $structured_summary
+
+    Structural metrics for context:
+    $metrics_json
+
+    Judge this page's human readability, AI/LLM extractability, and whether it's an article (vs. a landing/listing/product page). If structured data already declares a type (e.g. JSON-LD @type or og:type), weigh that as a strong signal.
+
+    Here is an EXAMPLE response, for a completely different, unrelated page, showing the format and level of specificity expected. Do not reuse its wording or values -- it is only here to show you what 'real analysis' looks like instead of generic filler:
+
+    $readability_example
+
+    Now write your own JSON object in the exact same shape, based on the actual page text above. Be specific -- reference what's actually in the excerpt. Return ONLY the JSON object, no commentary, no markdown fences.
+
+  readability_placeholder_note: |
+    NOTE: this excerpt appears to contain lorem-ipsum-style placeholder/filler text (common on dev or staging sites). Do not penalize prose quality for gibberish text -- judge the structure (headings, organization) but call out in your reasoning that the content itself looks like placeholder copy, not a real readability problem.
+
+  heatmap_entries: |
+    You are a senior web + AI readability auditor.
+    Below are pre-identified regions of a page -- they have already been segmented for you, so you do not need to find regions yourself, only judge the ones given:
+
+    $regions_json
+    $placeholder_note
+    Structural metrics for the whole page:
+    $metrics_json
+
+    Here is an EXAMPLE response, for different, unrelated regions, showing the format and level of specificity expected. Do not reuse its wording or values -- it is only here to show you what 'real analysis' looks like instead of generic filler. Note that a region can have an empty issues list (r3), exactly one issue (r2), or multiple distinct issues (r1) -- whatever is actually true, don't force one issue per region or invent a second one just to have something to say:
+
+    $heatmap_entries_example
+
+    Now return a JSON array with exactly one entry per region_id above (there are $num_regions). Every entry MUST include numeric human_readability, ai_readability, and semantic_quality scores (1-10) -- never omit them. Each entry's "issues" field is a LIST of {issue, fix} pairs -- use as many as are genuinely true for that region (zero, one, or several), each one an actual diagnosis of a problem, not a restatement of the region's excerpt text. If there's genuinely no issue, leave issues as an empty list rather than copying the excerpt back or inventing something. Return ONLY the JSON array, no commentary, no markdown fences, no wrapper object -- just the array.
+
+  heatmap_entries_placeholder_note: |
+    NOTE: regions $placeholder_ids appear to contain lorem-ipsum-style placeholder/filler text. For those, don't critique the gibberish prose -- just add one issue noting 'Contains placeholder/lorem-ipsum text, not real content' and still score semantic_quality based on the HTML structure itself.
+
+  global_issues: |
+    Now summarize the page as a whole, based ONLY on the issues you just identified for the regions above -- do not introduce a new issue you haven't already flagged.
+
+    List every CRITICAL, MODERATE, and MINOR issue you can actually point to in the regions above (no need to pad the list, and no fixed minimum -- but you may include up to $max_critical critical, $max_moderate moderate, and $max_minor minor items if that many genuinely apply), plus up to $max_fix_priority fix priorities (task + reason). Every single item must trace back to something you specifically said about one of the regions above. Don't repeat the same issue worded two different ways just to fill space.
+
+    Here is an EXAMPLE of the format, for a different, unrelated page -- do not reuse its wording or its specific issues (this example's issues will not match your page):
+
+    $global_issues_example
+
+    Return ONLY a JSON object in that same shape, no commentary, no markdown fences.
+
+  ai_parse: |
+    You are auditing how well an AI agent or RAG system would be able to PARSE this page's STRUCTURE -- not whether the writing is good (that's judged separately). Page title: $title
+
+    Heading outline, in document order (this is the skeleton a parser would build a table of contents from):
+    $outline_text
+
+    Page regions (tag + size, not content):
+    $region_summary
+
+    Structured data found:
+    $structured_summary
+
+    Judge ONLY structural parseability: does the heading outline make logical sense as a table of contents (no illogical skips, no flat walls of same-level headings that should be nested, no missing h1)? Is content cleanly separated from chrome (nav/footer) by the regions above, or does a chrome block title show up disguised as a content heading? Does the structured data's declared type match what the regions suggest this page actually is? Each one is checkable from what's given above -- do not comment on prose quality, grammar, or tone.
+
+    Here are TWO EXAMPLE responses for different, unrelated pages, showing different kinds of structural problems -- do not reuse their wording or specific issues, your page may have neither, one, or both kinds of problem, or something else entirely. The examples each happen to list 2-3 problems, but that is NOT a target count -- your own list can have any number of entries (0, 1, 2, 5, whatever is actually true for this page). Never include a blank entry just to match the examples' length:
+
+    EXAMPLE 1:
+    $ai_parse_example_1
+
+    EXAMPLE 2:
+    $ai_parse_example_2
+
+    Now write your own JSON object in the exact same shape, based on the actual outline/regions/structured-data above. If there's truly nothing structurally wrong, say so and leave problems as an empty list -- don't invent issues that aren't there. Return ONLY the JSON object, no commentary, no markdown fences.

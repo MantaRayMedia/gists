@@ -13,10 +13,37 @@ Usage:
     python web_audit.py https://example.com --model llama3.2:3b --out-dir reports/
     python web_audit.py https://example.com --no-cache --max-regions 6
 
-    python web_audit.py https://example.com --deep-ai-check
-
-    python web_audit.py https://example.com --profile remora
-    python web_audit.py https://example.com --profile-file my_remora_tuned.json
+- A 3B model reading our bespoke nested {"type","name","attrs","children"}
+  JSON dialect is reading something it's never seen in training. It's far
+  more capable reading plain text/HTML excerpts, which is what it WAS
+  trained on. So region segmentation (finding nav/header/main/article/
+  footer/section and pulling a text excerpt from each) happens in Python,
+  not in the prompt -- the model is only asked to judge content it's
+  handed, never to parse structure itself.
+- The schema is flat (one level), not three levels of nesting. Small
+  models reliably degrade into empty/placeholder output as nesting depth
+  and field count increase under load.
+- Forced format="json" grammar-constrained decoding is OFF by default.
+  Constrained decoding guarantees syntax, not content, and forcing a small
+  model to satisfy JSON grammar token-by-token while also composing real
+  analysis leaves it little capacity for the latter -- in practice it
+  collapses into the cheapest valid completion (i.e. the placeholders).
+  Free generation + a JSON-repair retry loop (already needed for other
+  failure modes anyway) gets better content at the cost of occasionally
+  needing one repair pass. Pass --strict-json to re-enable grammar mode.
+- Malformed JSON gets a free deterministic repair pass (the json-repair
+  library) before spending a retry round-trip asking the model to fix
+  itself -- the most common cause is the model echoing real page text
+  that contains a literal " character (a quoted testimonial, a caption)
+  without escaping it, which breaks the parser in a way bracket-matching
+  alone can't reliably recover from.
+- Every prompt includes a concreate, fully-filled few-shot example (not a
+  schema of placeholder zeros/empty-strings) about an unrelated page, so
+  the model has a real precedent for the level of detail wanted instead of
+  a template that's trivially "satisfied" by copying it.
+- A response that's still empty/placeholder-shaped after a JSON-parse
+  failure AND after a content-quality failure gets retried with explicit
+  corrective feedback before being marked low-confidence in the report.
 """
 
 import argparse
@@ -27,10 +54,12 @@ import re
 import sys
 from datetime import datetime, timezone
 from pathlib import Path
+from string import Template
 from urllib.parse import urlparse
 
 import ollama
 import requests
+import yaml
 from bs4 import BeautifulSoup, Comment, NavigableString, Tag
 from json_repair import repair_json
 
@@ -38,14 +67,72 @@ from json_repair import repair_json
 # Python's default recursion limit during DOM serialization.
 sys.setrecursionlimit(5000)
 
+# All prompts, few-shot examples, feedback messages, and tunable settings
+# live in this YAML file
+DEFAULT_CONFIG_PATH = Path(__file__).resolve().parent / "web_audit_config.yaml"
+
+
+def load_config(path=None) -> dict:
+    """Loads the prompt/settings config from YAML. Raises clearly if the
+    file is missing rather than failing deep inside some prompt-builder
+    with a confusing KeyError."""
+    config_path = Path(path) if path else DEFAULT_CONFIG_PATH
+    if not config_path.exists():
+        raise FileNotFoundError(
+            f"Config file not found: {config_path}. This file ships alongside web_audit.py -- "
+            "if you moved the script, move the config with it, or pass --config explicitly."
+        )
+    with open(config_path, "r", encoding="utf-8") as f:
+        return yaml.safe_load(f)
+
+
+CONFIG = load_config()
+
 CACHE_DIR = Path(".cache")
-DEFAULT_MODEL = "llama3.2:3b"
-DEFAULT_TIMEOUT = 20
-DEFAULT_TEXT_EXCERPT_CHARS = 3000
-DEFAULT_MAX_REGIONS = 8
-DEFAULT_REGION_MIN_CHARS = 120
-DEFAULT_REGION_EXCERPT_CHARS = 280
+DEFAULT_MODEL = CONFIG["settings"]["default_model"]
+DEFAULT_TIMEOUT = CONFIG["settings"]["default_timeout"]
+DEFAULT_TEXT_EXCERPT_CHARS = CONFIG["settings"]["default_text_excerpt_chars"]
+DEFAULT_MAX_REGIONS = CONFIG["settings"]["default_max_regions"]
+DEFAULT_REGION_MIN_CHARS = CONFIG["settings"]["default_region_min_chars"]
+DEFAULT_REGION_EXCERPT_CHARS = CONFIG["settings"]["default_region_excerpt_chars"]
 MAX_SERIALIZE_DEPTH = 200  # hard safety cap, independent of region segmentation
+
+
+def reload_config(path) -> None:
+    """Used by --config to point at a different YAML file at runtime.
+    Everything below is derived from CONFIG once at import time for
+    convenient direct access (wa.READABILITY_EXAMPLE, etc., used by every
+    existing test) -- reassigning CONFIG alone wouldn't update those, so
+    this re-derives all of them. Names referenced here are defined later
+    in the file, which is fine: this function's body isn't executed until
+    called, by which point the whole module is loaded."""
+    global CONFIG, DEFAULT_MODEL, DEFAULT_TIMEOUT, DEFAULT_TEXT_EXCERPT_CHARS
+    global DEFAULT_MAX_REGIONS, DEFAULT_REGION_MIN_CHARS, DEFAULT_REGION_EXCERPT_CHARS
+    global READABILITY_EXAMPLE, HEATMAP_ENTRIES_EXAMPLE, GLOBAL_ISSUES_EXAMPLE
+    global AI_PARSE_EXAMPLE, AI_PARSE_EXAMPLE_2
+    global _EXAMPLE_ECHO_STRINGS, _AI_PARSE_ECHO_STRINGS
+    global _LOW_EFFORT_FEEDBACK, _HEATMAP_ENTRIES_FEEDBACK
+
+    CONFIG = load_config(path)
+    settings = CONFIG["settings"]
+    DEFAULT_MODEL = settings["default_model"]
+    DEFAULT_TIMEOUT = settings["default_timeout"]
+    DEFAULT_TEXT_EXCERPT_CHARS = settings["default_text_excerpt_chars"]
+    DEFAULT_MAX_REGIONS = settings["default_max_regions"]
+    DEFAULT_REGION_MIN_CHARS = settings["default_region_min_chars"]
+    DEFAULT_REGION_EXCERPT_CHARS = settings["default_region_excerpt_chars"]
+
+    READABILITY_EXAMPLE = CONFIG["examples"]["readability"].strip()
+    HEATMAP_ENTRIES_EXAMPLE = CONFIG["examples"]["heatmap_entries"].strip()
+    GLOBAL_ISSUES_EXAMPLE = CONFIG["examples"]["global_issues"].strip()
+    AI_PARSE_EXAMPLE = CONFIG["examples"]["ai_parse_1"].strip()
+    AI_PARSE_EXAMPLE_2 = CONFIG["examples"]["ai_parse_2"].strip()
+
+    _EXAMPLE_ECHO_STRINGS = set(CONFIG["echo_strings"]["global_issues"])
+    _AI_PARSE_ECHO_STRINGS = set(CONFIG["echo_strings"]["ai_parse"])
+
+    _LOW_EFFORT_FEEDBACK = CONFIG["feedback"]["low_effort"].strip()
+    _HEATMAP_ENTRIES_FEEDBACK = CONFIG["feedback"]["heatmap_entries"].strip()
 
 
 # =========================================================
@@ -506,11 +593,7 @@ _HEADING_TAGS = ("h1", "h2", "h3", "h4", "h5", "h6")
 def extract_heading_outline(dom, max_headings: int = 40) -> list:
     """Returns the page's heading hierarchy in document order, e.g.
     [{"level": 1, "text": "Welcome"}, {"level": 2, "text": "Our services"}].
-    This is the structural skeleton handed to the AI-parseability pass --
-    deliberately NOT the prose itself, since that pass judges structure
-    (does the outline make sense as a table of contents, is chrome cleanly
-    separated from content), not writing quality (which the readability
-    pass already covers)."""
+    This is the structural skeleton handed to the AI-parseability pass."""
     outline = []
 
     def walk(node):
@@ -521,6 +604,7 @@ def extract_heading_outline(dom, max_headings: int = 40) -> list:
             parts = []
             _collect_text(node, parts)
             text = " ".join(parts).strip()
+            text, _ = strip_debug_dump(text)  # defensive -- closes the one path not already covered
             if text:
                 outline.append({"level": int(name[1]), "text": text[:120]})
             return  # heading tags don't nest further headings inside them
@@ -740,64 +824,17 @@ def segment_regions(
 # OPTIONAL JSON-MODE, SELF-REPAIR + LOW-EFFORT RETRY)
 # =========================================================
 
-READABILITY_EXAMPLE = """{
-  "page_score": 58,
-  "human_score": 6,
-  "human_summary": "Body copy is clear sentence-by-sentence, but the actual point doesn't show up until several paragraphs of throat-clearing and is interrupted twice by unrelated promo blocks.",
-  "ai_score": 4,
-  "ai_summary": "No clear heading hierarchy separates sections, so an extractor would have a hard time telling promotional asides apart from the actual subject matter.",
-  "is_article": true,
-  "confidence": 0.7,
-  "page_type": "blog",
-  "reasoning": "Has a byline, a publish date, and several paragraphs of prose, but is interrupted by enough non-editorial content that confidence isn't higher.",
-  "top_issue": "Promotional content is interleaved with editorial content with no visual or structural separation.",
-  "top_issue_fix": "Move promotional blocks to a sidebar or clearly-labeled section, separate from the article body."
-}"""
-
-HEATMAP_ENTRIES_EXAMPLE = """[
-  {"region_id": "r1", "human_readability": 3, "ai_readability": 2, "semantic_quality": 3, "issue": "47 nearly-identical links with no grouping or labeling", "fix": "Group related links under labeled <ul> sections, or collapse into a dropdown"},
-  {"region_id": "r2", "human_readability": 8, "ai_readability": 7, "semantic_quality": 8, "issue": "Minor: heading jumps from h1 directly to h4", "fix": "Use h2/h3 for intermediate sections"}
-]"""
-
-GLOBAL_ISSUES_EXAMPLE = """{
-  "global_issues": {
-    "critical": ["Checkout button has no visible label, only an icon"],
-    "moderate": ["Two different sections use inconsistent date formats (Jan 5 vs 01/05)"],
-    "minor": ["Footer social links open in the same tab instead of a new one"]
-  },
-  "fix_priority": [
-    {"task": "Add a text label or aria-label to the checkout button", "reason": "Screen readers and AI agents currently can't tell what it does"},
-    {"task": "Standardize date formatting across sections", "reason": "Inconsistent formats look unpolished and can confuse date-parsing extractors"}
-  ]
-}"""
+# Few-shot examples and the echo-detection safety net
+READABILITY_EXAMPLE = CONFIG["examples"]["readability"].strip()
+HEATMAP_ENTRIES_EXAMPLE = CONFIG["examples"]["heatmap_entries"].strip()
+GLOBAL_ISSUES_EXAMPLE = CONFIG["examples"]["global_issues"].strip()
 
 # Safety net: if the model still falls back to copying example text verbatim
 # instead of grounding its answer in the actual regions, these exact strings
 # from the examples above are the tell. Checked against, never about the
 # user's real page -- if any of these show up unmodified, the response gets
 # treated as low-effort and retried.
-_EXAMPLE_ECHO_STRINGS = {
-    "47 nearly-identical links with no grouping or labeling",
-    "Group related links under labeled <ul> sections, or collapse into a dropdown",
-    "Minor: heading jumps from h1 directly to h4",
-    "Use h2/h3 for intermediate sections",
-    "Checkout button has no visible label, only an icon",
-    "Two different sections use inconsistent date formats (Jan 5 vs 01/05)",
-    "Footer social links open in the same tab instead of a new one",
-    "Add a text label or aria-label to the checkout button",
-    "Screen readers and AI agents currently can't tell what it does",
-    "Standardize date formatting across sections",
-    "Inconsistent formats look unpolished and can confuse date-parsing extractors",
-    # Strings from an earlier version of this prompt that real runs have
-    # echoed verbatim -- kept here so old habits get caught too.
-    "No <main> landmark wraps the primary content",
-    "Several buttons have no visible text, only icons",
-    "Inconsistent date formatting between sections",
-    "Add a <main> landmark around the primary content",
-    "Currently nav and content are structurally indistinguishable to assistive tech and extractors",
-    "Label icon-only buttons",
-    "Screen readers and AI agents can't tell what they do",
-}
+_EXAMPLE_ECHO_STRINGS = set(CONFIG["echo_strings"]["global_issues"])
 
 
 def summarize_structured_data(structured_data: dict) -> str:
@@ -826,80 +863,44 @@ def summarize_structured_data(structured_data: dict) -> str:
 
 def build_readability_prompt(title: str, text_excerpt: str, metrics_json: str, structured_data: dict, placeholder_warning: bool = False) -> str:
     structured_summary = summarize_structured_data(structured_data)
-    placeholder_note = (
-        "\nNOTE: this excerpt appears to contain lorem-ipsum-style placeholder/filler text "
-        "(common on dev or staging sites). Do not penalize prose quality for gibberish text -- "
-        "judge the structure (headings, organization) but call out in your reasoning that the "
-        "content itself looks like placeholder copy, not a real readability problem.\n"
-        if placeholder_warning else ""
-    )
-    return (
-        "You are a senior web + AI readability auditor.\n"
-        f"Page title: {title!r}\n\n"
-        "Below is the page's visible text in reading order (it may be truncated if long):\n"
-        "---\n"
-        f"{text_excerpt}\n"
-        "---\n"
-        f"{placeholder_note}\n"
-        f"Structured data found on this page (already parsed/validated -- use as context, you "
-        f"don't need to re-derive it):\n{structured_summary}\n\n"
-        f"Structural metrics for context:\n{metrics_json}\n\n"
-        "Judge this page's human readability, AI/LLM extractability, and whether it's an "
-        "article (vs. a landing/listing/product page). If structured data already declares a "
-        "type (e.g. JSON-LD @type or og:type), weigh that as a strong signal.\n\n"
-        "Here is an EXAMPLE response, for a completely different, unrelated page, showing the "
-        "format and level of specificity expected. Do not reuse its wording or values -- it is "
-        "only here to show you what 'real analysis' looks like instead of generic filler:\n\n"
-        f"{READABILITY_EXAMPLE}\n\n"
-        "Now write your own JSON object in the exact same shape, based on the actual page text "
-        "above. Be specific -- reference what's actually in the excerpt. "
-        "Return ONLY the JSON object, no commentary, no markdown fences."
-    )
+    placeholder_note = ("\n" + CONFIG["prompts"]["readability_placeholder_note"].strip() + "\n") if placeholder_warning else ""
+    return Template(CONFIG["prompts"]["readability"]).substitute(
+        title=repr(title),
+        text_excerpt=text_excerpt,
+        placeholder_note=placeholder_note,
+        structured_summary=structured_summary,
+        metrics_json=metrics_json,
+        readability_example=READABILITY_EXAMPLE,
+    ).strip()
 
 
 def build_heatmap_entries_prompt(regions: list, metrics_json: str) -> str:
     regions_json = json.dumps(regions, indent=2)
     placeholder_ids = [r["region_id"] for r in regions if r.get("likely_placeholder")]
     placeholder_note = (
-        f"\nNOTE: regions {', '.join(placeholder_ids)} appear to contain lorem-ipsum-style "
-        "placeholder/filler text. For those, don't critique the gibberish prose -- just set "
-        "issue to something like 'Contains placeholder/lorem-ipsum text, not real content' and "
-        "still score semantic_quality based on the HTML structure itself.\n"
+        "\n" + Template(CONFIG["prompts"]["heatmap_entries_placeholder_note"]).substitute(
+            placeholder_ids=", ".join(placeholder_ids)
+        ).strip() + "\n"
         if placeholder_ids else ""
     )
-    return (
-        "You are a senior web + AI readability auditor.\n"
-        "Below are pre-identified regions of a page -- they have already been segmented for "
-        "you, so you do not need to find regions yourself, only judge the ones given:\n\n"
-        f"{regions_json}\n"
-        f"{placeholder_note}\n"
-        f"Structural metrics for the whole page:\n{metrics_json}\n\n"
-        "Here is an EXAMPLE response, for different, unrelated regions, showing the format and "
-        "level of specificity expected. Do not reuse its wording or values -- it is only here "
-        "to show you what 'real analysis' looks like instead of generic filler:\n\n"
-        f"{HEATMAP_ENTRIES_EXAMPLE}\n\n"
-        "Now return a JSON array with exactly one entry per region_id above (there are "
-        f"{len(regions)}). Every entry MUST include numeric human_readability, ai_readability, "
-        "and semantic_quality scores (1-10) -- never omit them. The 'issue' field must be an "
-        "actual diagnosis of a problem, not a restatement of the region's excerpt text -- if "
-        "there's genuinely no issue, set issue and fix to empty strings rather than copying the "
-        "excerpt back. Return ONLY the JSON array, no commentary, no markdown fences, no "
-        "wrapper object -- just the array."
-    )
+    return Template(CONFIG["prompts"]["heatmap_entries"]).substitute(
+        regions_json=regions_json,
+        placeholder_note=placeholder_note,
+        metrics_json=metrics_json,
+        heatmap_entries_example=HEATMAP_ENTRIES_EXAMPLE,
+        num_regions=len(regions),
+    ).strip()
 
 
 def build_global_issues_prompt() -> str:
-    return (
-        "Now summarize the page as a whole, based ONLY on the issues you just identified for "
-        "the regions above -- do not introduce a new issue you haven't already flagged.\n\n"
-        "Give up to 3 CRITICAL issues, up to 3 MODERATE issues, up to 3 MINOR issues, and up "
-        "to 3 fix priorities (task + reason). Every single item must trace back to something "
-        "you specifically said about one of the regions above.\n\n"
-        "Here is an EXAMPLE of the format, for a different, unrelated page -- do not reuse its "
-        "wording or its specific issues (this example's issues will not match your page):\n\n"
-        f"{GLOBAL_ISSUES_EXAMPLE}\n\n"
-        "Return ONLY a JSON object in that same shape, no commentary, no markdown fences."
-    )
+    settings = CONFIG["settings"]
+    return Template(CONFIG["prompts"]["global_issues"]).substitute(
+        max_critical=settings["global_issues_max_critical"],
+        max_moderate=settings["global_issues_max_moderate"],
+        max_minor=settings["global_issues_max_minor"],
+        max_fix_priority=settings["global_issues_max_fix_priority"],
+        global_issues_example=GLOBAL_ISSUES_EXAMPLE,
+    ).strip()
 
 
 # =========================================================
@@ -911,54 +912,31 @@ def build_global_issues_prompt() -> str:
 # separation, and structured-data-vs-content consistency.)
 # =========================================================
 
-AI_PARSE_EXAMPLE = """{
-  "ai_parse_score": 4,
-  "ai_parse_summary": "The heading outline jumps from h1 straight to h4 twice, which suggests headings were chosen for visual size rather than logical document structure -- a parser building a table of contents from headings alone would get a flat, unhelpful outline. The JSON-LD declares this as a Product page, but every region (long-form article body, author byline region, related-reading section) reads like a blog post, not a product page -- those two signals conflict.",
-  "problems": [
-    {"issue": "Heading levels skip from h1 to h4 in two places, flattening the logical outline", "fix": "Use h2 for top-level sections and h3 for subsections instead of jumping straight to h4"},
-    {"issue": "JSON-LD @type (Product) doesn't match the actual page content (a blog article)", "fix": "Change the JSON-LD @type to Article/BlogPosting, or add a separate WebPage entity if Product is needed for another purpose"}
-  ]
-}"""
+AI_PARSE_EXAMPLE = CONFIG["examples"]["ai_parse_1"].strip()
+
+# A second example covering a different, very common real-world pattern:
+# no h1 at all, a completely flat single-level outline, and a chrome/utility
+# block title (e.g. a nav region's auto-generated block heading) sitting
+# alongside real content headings with no way to distinguish them.
+AI_PARSE_EXAMPLE_2 = CONFIG["examples"]["ai_parse_2"].strip()
 
 
 def build_ai_parse_prompt(title: str, heading_outline: list, regions: list, structured_data: dict) -> str:
     outline_text = "\n".join(f"{'  ' * (h['level'] - 1)}H{h['level']}: {h['text']}" for h in heading_outline) or "(no headings found)"
     region_summary = "\n".join(f"- {r['region_id']} ({r['tag']}): {r['word_count']} words, {r['link_count']} links" for r in regions) or "(no regions found)"
     structured_summary = summarize_structured_data(structured_data)
-    return (
-        "You are auditing how well an AI agent or RAG system would be able to PARSE this "
-        "page's STRUCTURE -- not whether the writing is good (that's judged separately). "
-        f"Page title: {title!r}\n\n"
-        "Heading outline, in document order (this is the skeleton a parser would build a "
-        "table of contents from):\n"
-        f"{outline_text}\n\n"
-        "Page regions (tag + size, not content):\n"
-        f"{region_summary}\n\n"
-        f"Structured data found:\n{structured_summary}\n\n"
-        "Judge ONLY structural parseability: does the heading outline make logical sense as a "
-        "table of contents (no illogical skips, no flat walls of same-level headings that should "
-        "be nested)? Is content cleanly separated from chrome (nav/footer) by the regions above? "
-        "Does the structured data's declared type match what the regions suggest this page "
-        "actually is? Each one is checkable from what's given above -- do not comment on prose "
-        "quality, grammar, or tone.\n\n"
-        "Here is an EXAMPLE response for a different, unrelated page -- do not reuse its wording "
-        "or its specific issues:\n\n"
-        f"{AI_PARSE_EXAMPLE}\n\n"
-        "Now write your own JSON object in the exact same shape, based on the actual outline/"
-        "regions/structured-data above. If there's truly nothing structurally wrong, say so and "
-        "leave problems as an empty list -- don't invent issues that aren't there. "
-        "Return ONLY the JSON object, no commentary, no markdown fences."
-    )
+    return Template(CONFIG["prompts"]["ai_parse"]).substitute(
+        title=repr(title),
+        outline_text=outline_text,
+        region_summary=region_summary,
+        structured_summary=structured_summary,
+        ai_parse_example_1=AI_PARSE_EXAMPLE,
+        ai_parse_example_2=AI_PARSE_EXAMPLE_2,
+    ).strip()
 
 
 _AI_PARSE_REQUIRED = ("ai_parse_score", "ai_parse_summary", "problems")
-_AI_PARSE_ECHO_STRINGS = {
-    "Heading levels skip from h1 to h4 in two places, flattening the logical outline",
-    "Use h2 for top-level sections and h3 for subsections instead of jumping straight to h4",
-    "JSON-LD @type (Product) doesn't match the actual page content (a blog article)",
-    "Change the JSON-LD @type to Article/BlogPosting, or add a separate WebPage entity if Product is needed for another purpose",
-}
-
+_AI_PARSE_ECHO_STRINGS = set(CONFIG["echo_strings"]["ai_parse"])
 
 def _is_low_effort_ai_parse(result: dict) -> bool:
     if not isinstance(result, dict):
@@ -988,6 +966,56 @@ def _is_low_effort_ai_parse(result: dict) -> bool:
     return False
 
 
+def _build_ai_parse_feedback(parsed: dict) -> str:
+    """
+    Builds feedback naming EXACTLY what's wrong with this specific response,
+    instead of a static generic message. Seen in practice: the model can
+    produce a genuinely good summary while still leaving some problem
+    entries blank, and a generic "try again" message doesn't reliably get
+    it to go back and fix (or delete) the specific blank ones -- it tends
+    to just keep the good parts and add more of the same incomplete shape.
+    """
+    if not isinstance(parsed, dict):
+        return (
+            "Your previous response wasn't a JSON object with the expected fields. "
+            "Return ONLY a JSON object with ai_parse_score, ai_parse_summary, and problems. "
+            "No commentary, no markdown fences."
+        )
+
+    issues = []
+
+    summary = parsed.get("ai_parse_summary", "")
+    if not (isinstance(summary, str) and len(summary.strip()) > 15):
+        issues.append("ai_parse_summary is empty or too short -- write at least a sentence describing what you actually see")
+
+    problems = parsed.get("problems", [])
+    blank_positions = [
+        i for i, p in enumerate(problems, 1)
+        if isinstance(p, dict) and not (p.get("issue", "").strip() or p.get("fix", "").strip())
+    ]
+    if blank_positions:
+        positions = ", ".join(str(b) for b in blank_positions)
+        issues.append(
+            f"problem entry/entries at position(s) {positions} in your list have blank issue/fix "
+            "text -- either fill them in with a real, specific problem, or DELETE them from the "
+            "list entirely. The list does not need to match the examples' length -- 0, 1, or any "
+            "other number is fine."
+        )
+
+    echoed = [p.get("issue", "") for p in problems if isinstance(p, dict) and p.get("issue", "") in _AI_PARSE_ECHO_STRINGS]
+    if echoed:
+        quoted = "; ".join(f'"{e}"' for e in echoed)
+        issues.append(f"these exact phrases are copied from the example and must be replaced: {quoted}")
+
+    detail = " Also: ".join(issues) if issues else "Your response still didn't contain real analysis."
+
+    return (
+        f"{detail} Keep whatever was already good in your previous answer (e.g. if your summary "
+        "was accurate, keep it) -- just fix exactly what's listed above. "
+        "Return ONLY the corrected JSON object, no commentary, no markdown fences."
+    )
+
+
 def _clean_ai_parse_problems(problems) -> list:
     """Defensive cleanup, same pattern as _clean_global_issues: strip any
     blank-shell problem entries even if one slips through validation after
@@ -1000,7 +1028,7 @@ def _clean_ai_parse_problems(problems) -> list:
 
 def extract_json_block(text: str) -> str:
     """Strip markdown code fences and isolate the outermost JSON value
-    (object OR array), since models often wrap JSON in commentary or
+    (object OR array). Since models often wrap JSON in commentary or
     ```json fences despite being told not to, and some prompts here ask
     for a bare array rather than a wrapper object."""
     text = text.strip()
@@ -1063,10 +1091,12 @@ _HEATMAP_SCORE_KEYS = ("human_readability", "ai_readability", "semantic_quality"
 
 
 def _is_low_effort_heatmap_entries(result, region_lookup: dict = None) -> bool:
-    """result is expected to be a list here, not a dict. Catches three
-    distinct failure modes seen in real runs: missing entries entirely,
-    missing/null numeric scores, and an 'issue' field that's just the
-    region's own excerpt copied back rather than an actual diagnosis."""
+    """result is expected to be a list here, not a dict. Each entry's
+    'issues' field is itself a list of {issue, fix} pairs (0 or more --
+    a region can have no problems, one, or several). Catches: missing
+    entries entirely, missing/null numeric scores, a blank-shell entry
+    inside the issues list, and an issue that's just the region's own
+    excerpt copied back rather than an actual diagnosis."""
     if not isinstance(result, list) or not result:
         return True
 
@@ -1076,28 +1106,76 @@ def _is_low_effort_heatmap_entries(result, region_lookup: dict = None) -> bool:
             return True
         if any(r.get(k) is None for k in _HEATMAP_SCORE_KEYS):
             return True
-        issue = (r.get("issue") or "").strip()
-        fix = (r.get("fix") or "").strip()
-        if issue:
-            excerpt = region_lookup.get(r.get("region_id"), {}).get("excerpt", "")
-            if excerpt and (issue in excerpt or excerpt[:80] in issue):
-                return True  # just echoed the excerpt back, not a diagnosis
-            if not fix:
-                return True  # named a real problem but gave no fix -- incomplete
+
+        issues = r.get("issues", [])
+        if not isinstance(issues, list):
+            return True
+
+        excerpt = region_lookup.get(r.get("region_id"), {}).get("excerpt", "")
+        for entry in issues:
+            if not isinstance(entry, dict):
+                return True
+            issue = (entry.get("issue") or "").strip()
+            fix = (entry.get("fix") or "").strip()
+            if not issue and not fix:
+                return True  # blank-shell entry sitting in the list
+            if issue:
+                if excerpt and (issue in excerpt or excerpt[:80] in issue):
+                    return True  # just echoed the excerpt back, not a diagnosis
+                if not fix:
+                    return True  # named a real problem but gave no fix -- incomplete
     return False
 
 
+def _clean_heatmap_entries(entries) -> list:
+    """Defensive cleanup, same pattern as _clean_global_issues/_clean_ai_parse_problems:
+    strip any blank-shell entries from each region's issues list even if
+    one slips through validation after retries are exhausted."""
+    if not isinstance(entries, list):
+        return []
+    cleaned = []
+    for r in entries:
+        if not isinstance(r, dict):
+            continue
+        issues = r.get("issues", [])
+        if isinstance(issues, list):
+            r = dict(r)
+            r["issues"] = [
+                e for e in issues
+                if isinstance(e, dict) and ((e.get("issue") or "").strip() or (e.get("fix") or "").strip())
+            ]
+        cleaned.append(r)
+    return cleaned
+
+
 def _contains_echoed_example_text(result: dict) -> bool:
-    all_strings = []
+    return bool(_find_echoed_strings(result))
+
+
+def _find_echoed_strings(result: dict) -> list:
+    """Returns the specific strings that exactly match known example text.
+    Naming the exact offending phrase in feedback works much better than
+    vaguely saying 'don't copy the example' -- seen in practice: a model
+    given vague feedback will sometimes fix ONE field (e.g. global_issues)
+    while leaving another field (e.g. fix_priority) byte-for-byte identical
+    to the echoed attempt, because nothing told it that field was also
+    still wrong."""
+    if not isinstance(result, dict):
+        return []
+    found = []
     gi = result.get("global_issues", {})
     if isinstance(gi, dict):
         for lvl in ("critical", "moderate", "minor"):
-            all_strings.extend(s for s in gi.get(lvl, []) if isinstance(s, str))
+            for s in gi.get(lvl, []):
+                if isinstance(s, str) and s.strip() in _EXAMPLE_ECHO_STRINGS:
+                    found.append(s.strip())
     for f in result.get("fix_priority", []):
         if isinstance(f, dict):
-            all_strings.append(f.get("task", ""))
-            all_strings.append(f.get("reason", ""))
-    return any(s.strip() in _EXAMPLE_ECHO_STRINGS for s in all_strings)
+            for key in ("task", "reason"):
+                v = (f.get(key) or "").strip()
+                if v in _EXAMPLE_ECHO_STRINGS:
+                    found.append(v)
+    return found
 
 
 def _clean_global_issues(result: dict) -> dict:
@@ -1133,30 +1211,8 @@ def _is_low_effort_global_issues(result: dict) -> bool:
     return _contains_echoed_example_text(result)
 
 
-_LOW_EFFORT_FEEDBACK = (
-    "Your previous response was valid JSON but didn't contain real analysis -- fields were "
-    "empty, zeroed out, or missing entirely instead of reflecting the actual content given "
-    "earlier in this conversation. Look at that content again and write specific, concrete "
-    "values referencing what's actually there. "
-    "Return ONLY the corrected JSON, no commentary, no markdown fences."
-)
-
-_HEATMAP_ENTRIES_FEEDBACK = (
-    "Your previous response had one or both of these problems: (1) some entries were missing "
-    "numeric human_readability/ai_readability/semantic_quality scores -- every entry needs all "
-    "three, as numbers 1-10, never omitted; (2) some 'issue' fields were just the region's "
-    "excerpt text copied back, not an actual diagnosis -- either identify a real, specific "
-    "problem, or leave issue/fix as empty strings if there's nothing to flag. "
-    "Return ONLY the corrected JSON array, no commentary, no markdown fences."
-)
-
-_ECHOED_EXAMPLE_FEEDBACK = (
-    "That reused wording from the example almost verbatim instead of describing your own page. "
-    "The example was about a completely different, unrelated page -- its specific issues "
-    "(checkout buttons, date formats, etc.) have nothing to do with what you're analyzing. "
-    "Go back to the regions you scored above and summarize THOSE, in your own words. "
-    "Return ONLY the corrected JSON, no commentary, no markdown fences."
-)
+_LOW_EFFORT_FEEDBACK = CONFIG["feedback"]["low_effort"].strip()
+_HEATMAP_ENTRIES_FEEDBACK = CONFIG["feedback"]["heatmap_entries"].strip()
 
 
 def _chat_json_with_repair(model, messages, num_predict, temperature, strict_json, max_retries):
@@ -1188,6 +1244,13 @@ def _chat_json_with_repair(model, messages, num_predict, temperature, strict_jso
 
         text = res["message"]["content"]
         candidate = extract_json_block(text)
+        # done_reason tells us definitively whether the response was cut short by
+        # num_predict ("length") or completed normally ("stop") -- the difference
+        # between "the model ran out of room" and "the model just wrote broken
+        # syntax despite having space to finish" isn't guessable from the text
+        # alone, but Ollama reports it directly.
+        done_reason = res.get("done_reason", "unknown")
+        eval_count = res.get("eval_count")
 
         try:
             parsed = json.loads(candidate)
@@ -1204,24 +1267,27 @@ def _chat_json_with_repair(model, messages, num_predict, temperature, strict_jso
             try:
                 repaired = repair_json(candidate)
                 parsed = json.loads(repaired)
-                print(f"  JSON parse failed but json_repair recovered it (attempt {attempt + 1}/{max_retries + 1})")
+                print(
+                    f"  JSON parse failed but json_repair recovered it (attempt {attempt + 1}/{max_retries + 1}, "
+                    f"done_reason={done_reason}, tokens={eval_count})"
+                )
                 return parsed, messages + [{"role": "assistant", "content": text}]
             except (json.JSONDecodeError, ValueError):
                 pass
 
-            print(f"  JSON parse failed (attempt {attempt + 1}/{max_retries + 1}): {e}")
+            print(
+                f"  JSON parse failed (attempt {attempt + 1}/{max_retries + 1}, "
+                f"done_reason={done_reason}, tokens={eval_count}): {e}"
+            )
+            if done_reason == "length":
+                print(f"    -> response was CUT OFF at the {num_predict}-token limit, not a syntax mistake -- consider raising num_predict")
             if attempt == max_retries:
                 return {"parse_error": True, "raw": text}, messages
             messages = messages + [
                 {"role": "assistant", "content": text},
                 {
                     "role": "user",
-                    "content": (
-                        f"That was not valid JSON ({e}). If you're quoting or referencing text "
-                        "from the page that contains a literal \" character, escape it as \\\" "
-                        "inside your JSON strings. Return ONLY the corrected, complete, valid "
-                        "JSON -- no commentary, no markdown fences."
-                    ),
+                    "content": Template(CONFIG["feedback"]["json_invalid_template"]).substitute(error=str(e)).strip(),
                 },
             ]
 
@@ -1236,11 +1302,20 @@ def call_llm_json(
         num_predict: int = 1500,
         temperature: float = 0.4,
         strict_json: bool = False,
+        low_effort_feedback=None,
+        debug_label: str = None,
 ) -> dict:
     """
     Single-turn call: get valid JSON (via _chat_json_with_repair), then, if
     `validator` flags the content as low-effort/placeholder-shaped, retry
     with corrective feedback before giving up.
+
+    low_effort_feedback can be a static string, or a callable(parsed) -> str
+    that builds feedback naming exactly what's wrong with THIS response --
+    seen in practice: naming the specific blank fields/echoed phrases gets
+    fixed far more reliably than a generic "try again" message, especially
+    when the model has already produced SOME good content and just needs
+    to be told precisely what's still missing.
     """
     messages = [{"role": "user", "content": prompt}]
 
@@ -1252,13 +1327,22 @@ def call_llm_json(
             return parsed
 
         if validator and validator(parsed):
-            print(f"  Low-effort/empty response detected (attempt {attempt + 1}/{max_retries + 1})")
+            label = f" [{debug_label}]" if debug_label else ""
+            print(f"  Low-effort/empty response detected{label} (attempt {attempt + 1}/{max_retries + 1})")
+            # Visibility into WHAT was actually returned, not just that it failed --
+            # without this there's no way to tell "model genuinely produced junk"
+            # apart from "validator has a false-positive on a legitimate response."
+            print(f"    -> {json.dumps(parsed)[:300]}")
             if attempt == max_retries:
                 if isinstance(parsed, dict):
                     parsed["low_effort_warning"] = True
                     return parsed
                 return {"items": parsed, "low_effort_warning": True}
-            messages = messages + [{"role": "user", "content": _LOW_EFFORT_FEEDBACK}]
+            if callable(low_effort_feedback):
+                feedback = low_effort_feedback(parsed)
+            else:
+                feedback = low_effort_feedback or _LOW_EFFORT_FEEDBACK
+            messages = messages + [{"role": "user", "content": feedback}]
             continue
 
         return parsed
@@ -1297,13 +1381,14 @@ def call_heatmap_pipeline(
 
         if _is_low_effort_heatmap_entries(parsed, region_lookup):
             print(f"  Low-effort/empty heatmap entries detected (attempt {attempt + 1}/{max_retries + 1})")
+            print(f"    -> {json.dumps(parsed)[:300]}")
             if attempt == max_retries:
-                entries = parsed if isinstance(parsed, list) else []
+                entries = _clean_heatmap_entries(parsed) if isinstance(parsed, list) else []
                 break
             messages = messages + [{"role": "user", "content": _HEATMAP_ENTRIES_FEEDBACK}]
             continue
 
-        entries = parsed
+        entries = _clean_heatmap_entries(parsed)
         break
 
     result = {"heatmap": entries or []}
@@ -1325,9 +1410,11 @@ def call_heatmap_pipeline(
             break
 
         if _is_low_effort_global_issues(parsed):
-            echoed = _contains_echoed_example_text(parsed) if isinstance(parsed, dict) else False
+            matched = _find_echoed_strings(parsed) if isinstance(parsed, dict) else []
+            echoed = bool(matched)
             print(f"  {'Echoed example text' if echoed else 'Low-effort/empty global issues'} "
                   f"detected (attempt {attempt + 1}/{max_retries + 1})")
+            print(f"    -> {json.dumps(parsed)[:300] if isinstance(parsed, (dict, list)) else parsed}")
             if attempt == max_retries:
                 warnings.append(
                     "Global issues / fix priority still looked like copied example text or "
@@ -1337,7 +1424,22 @@ def call_heatmap_pipeline(
                 result["global_issues"] = cleaned["global_issues"]
                 result["fix_priority"] = cleaned["fix_priority"]
                 break
-            feedback = _ECHOED_EXAMPLE_FEEDBACK if echoed else _LOW_EFFORT_FEEDBACK
+            if matched:
+                # Naming the exact offending phrases and demanding a full rewrite stops the
+                # "fixed one field, left another byte-for-byte identical to the echo" pattern
+                # seen in practice -- vague feedback lets the model patch only the part it
+                # was vaguely told about and leave the rest untouched.
+                quoted = "; ".join(f'"{m}"' for m in matched)
+                feedback = (
+                    f"These exact phrases in your last answer are still copied from the example "
+                    f"and must ALL be replaced: {quoted}. This means more than one field still has "
+                    "the problem -- rewrite your ENTIRE response from scratch, in your own words, "
+                    "based only on the regions you scored above. Do not leave any field unchanged "
+                    "from your previous answer, even ones not listed here. "
+                    "Return ONLY the corrected JSON object, no commentary, no markdown fences."
+                )
+            else:
+                feedback = _LOW_EFFORT_FEEDBACK
             messages = messages + [{"role": "user", "content": feedback}]
             continue
 
@@ -1382,6 +1484,7 @@ def analyze_page(
         ai_parse = call_llm_json(
             model, build_ai_parse_prompt(title, heading_outline or [], regions, structured_data),
             validator=_is_low_effort_ai_parse, temperature=temperature, strict_json=strict_json,
+            low_effort_feedback=_build_ai_parse_feedback, debug_label="ai_parse",
         )
 
     result = {}
@@ -1514,9 +1617,11 @@ def build_markdown(
             f"- Scores: H={h.get('human_readability')} | "
             f"AI={h.get('ai_readability')} | Semantic={h.get('semantic_quality')}"
         )
-        if h.get("issue"):
-            md.append(f"- [ ] Issue: {h.get('issue')}")
-            md.append(f"  - Fix: {h.get('fix', '')}")
+        if h.get("issues"):
+            for entry in h["issues"]:
+                if entry.get("issue"):
+                    md.append(f"- [ ] Issue: {entry.get('issue')}")
+                    md.append(f"  - Fix: {entry.get('fix', '')}")
 
     # ----------------------------
     # GLOBAL ISSUES
@@ -1723,7 +1828,15 @@ def main():
              "logic, content/chrome separation, structured-data-vs-content consistency) -- a "
              "third model call, off by default to keep the default run fast.",
     )
+    parser.add_argument(
+        "--config", default=None,
+        help="Path to a custom prompts/settings YAML (same shape as web_audit_config.yaml, "
+             "which ships alongside this script and is used by default).",
+    )
     args = parser.parse_args()
+
+    if args.config:
+        reload_config(args.config)
 
     run(
         url=args.url,
