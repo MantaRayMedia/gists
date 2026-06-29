@@ -1,3 +1,43 @@
+diff --git a/civicrm_member_roles.module b/civicrm_member_roles.module
+index f37be5a..e12de5f 100644
+--- a/civicrm_member_roles.module
++++ b/civicrm_member_roles.module
+@@ -12,7 +12,7 @@ use Drupal\Core\Session\AccountInterface;
+  */
+ function civicrm_member_roles_user_login(AccountInterface $account) {
+   $config = \Drupal::config('civicrm_member_roles.settings');
+-  if (!in_array('login', $config->get('sync_method'))) {
++  if (!in_array('login', $config->get('sync_method') ?? [], TRUE)) {
+     return;
+   }
+ 
+@@ -27,7 +27,7 @@ function civicrm_member_roles_user_login(AccountInterface $account) {
+  */
+ function civicrm_member_roles_user_logout(AccountInterface $account) {
+   $config = \Drupal::config('civicrm_member_roles.settings');
+-  if (!in_array('login', $config->get('sync_method'))) {
++  if (!in_array('login', $config->get('sync_method') ?? [], TRUE)) {
+     return;
+   }
+ 
+@@ -42,7 +42,7 @@ function civicrm_member_roles_user_logout(AccountInterface $account) {
+  */
+ function civicrm_member_roles_cron() {
+   $config = \Drupal::config('civicrm_member_roles.settings');
+-  if (in_array('cron', $config->get('sync_method'))) {
++  if (in_array('cron', $config->get('sync_method') ?? [], TRUE)) {
+     /** @var \Drupal\civicrm_member_roles\CivicrmMemberRoles $civicrm_member_roles */
+     $civicrm_member_roles = \Drupal::service('civicrm_member_roles');
+     $civicrm_member_roles->sync($config->get('cron_limit'));
+@@ -71,7 +71,7 @@ function civicrm_member_roles_civicrm_post($op, $objname, $objid, &$objref) {
+ 
+   // Only act when configured for "update".
+   $config = \Drupal::config('civicrm_member_roles.settings');
+-  if (!in_array('update', $config->get('sync_method'))) {
++  if (!in_array('update', $config->get('sync_method') ?? [], TRUE)) {
+     return;
+   }
+ 
 diff --git a/src/CivicrmMemberRoles.php b/src/CivicrmMemberRoles.php
 index c6786c7..75c6147 100644
 --- a/src/CivicrmMemberRoles.php
@@ -9,12 +49,12 @@ index c6786c7..75c6147 100644
 -    $this->database = $database;
 +    $this->database = $this->getDatabase();
    }
-
+ 
    /**
 @@ -448,4 +448,15 @@ class CivicrmMemberRoles {
      return array_unique($roles);
    }
-
+ 
 +  /**
 +   * Gets the database.
 +   *
