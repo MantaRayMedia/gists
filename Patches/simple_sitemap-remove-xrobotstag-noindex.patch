@@ -1,0 +1,18 @@
+--- a/src/Controller/SimpleSitemapController.php
++++ b/src/Controller/SimpleSitemapController.php
+@@ -58,7 +58,6 @@
+ 
+     $response = new CacheableResponse($output, Response::HTTP_OK, [
+       'Content-type' => 'application/xml; charset=utf-8',
+-      'X-Robots-Tag' => 'noindex, follow',
+     ]);
+     $response->getCacheableMetadata()
+       ->addCacheTags(Cache::buildTags('simple_sitemap', (array) $variant))
+@@ -96,7 +95,6 @@
+ 
+     return new Response($xsl, Response::HTTP_OK, [
+       'Content-type' => 'application/xml; charset=utf-8',
+-      'X-Robots-Tag' => 'noindex, nofollow',
+     ]);
+   }
+ 
