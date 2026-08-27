@@ -1,5 +1,5 @@
---- /tmp/Server.php.orig	2026-08-27 12:26:38.324542763 +0100
-+++ web/modules/contrib/search_api/src/Entity/Server.php	2026-08-27 12:28:32.111174662 +0100
+--- a/src/Entity/Server.php
++++ b/src/Entity/Server.php
 @@ -20,6 +20,7 @@
  use Drupal\search_api\SearchApiException;
  use Drupal\search_api\ServerInterface;
