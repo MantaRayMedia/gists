@@ -1,29 +1,13 @@
 [
   {
-    "PathPattern": "/admin/*",
-    "TargetOriginId": "ELBOrigin",
-    "ViewerProtocolPolicy": "redirect-to-https",
-    "CachePolicyId": "1d6d37b6-03cf-4d4b-8119-7bd78a6ff9f0",
-    "OriginRequestPolicyId": "059aae22-e73a-41c6-9eb6-97aaafaf29a4",
-    "Compress": true,
-    "AllowedMethods": ["HEAD", "GET", "OPTIONS", "POST", "PUT", "PATCH", "DELETE"]
-  },
-  {
-    "PathPattern": "/user/*",
-    "TargetOriginId": "ELBOrigin",
-    "ViewerProtocolPolicy": "redirect-to-https",
-    "CachePolicyId": "1d6d37b6-03cf-4d4b-8119-7bd78a6ff9f0",
-    "OriginRequestPolicyId": "059aae22-e73a-41c6-9eb6-97aaafaf29a4",
-    "Compress": true,
-    "AllowedMethods": ["HEAD", "GET", "OPTIONS", "POST", "PUT", "PATCH", "DELETE"]
-  },
-  {
     "PathPattern": "/*.js",
     "TargetOriginId": "ELBOrigin",
     "ViewerProtocolPolicy": "redirect-to-https",
     "CachePolicyId": "658327ea-f89d-4fab-a63d-7e88639e58f6",
     "OriginRequestPolicyId": "216adef6-5c7f-47e4-b989-5492eafa07d3",
-    "Compress": true
+    "Compress": true,
+    "AllowedMethods": ["HEAD", "GET", "OPTIONS"],
+    "CachedMethods": ["HEAD", "GET"]
   },
   {
     "PathPattern": "/*.css",
@@ -31,15 +15,18 @@
     "ViewerProtocolPolicy": "redirect-to-https",
     "CachePolicyId": "658327ea-f89d-4fab-a63d-7e88639e58f6",
     "OriginRequestPolicyId": "216adef6-5c7f-47e4-b989-5492eafa07d3",
-    "Compress": true
+    "Compress": true,
+    "AllowedMethods": ["HEAD", "GET", "OPTIONS"],
+    "CachedMethods": ["HEAD", "GET"]
   },
   {
-    "PathPattern": "/sites/default/files/styles/*",
+    "PathPattern": "/*.map",
     "TargetOriginId": "ELBOrigin",
     "ViewerProtocolPolicy": "redirect-to-https",
-    "CachePolicyId": "658327ea-f89d-4fab-a63d-7e88639e58f6",
-    "OriginRequestPolicyId": "216adef6-5c7f-47e4-b989-5492eafa07d3",
-    "Compress": true
+    "CachePolicyId": "4135ea2d-6df8-44a3-9df3-4b5a84be39ad",
+    "Compress": true,
+    "AllowedMethods": ["HEAD", "GET", "OPTIONS"],
+    "CachedMethods": ["HEAD", "GET"]
   },
   {
     "PathPattern": "/themes/*",
@@ -48,6 +35,108 @@
     "CachePolicyId": "658327ea-f89d-4fab-a63d-7e88639e58f6",
     "OriginRequestPolicyId": "216adef6-5c7f-47e4-b989-5492eafa07d3",
     "ResponseHeadersPolicyId": "eaab4381-ed33-4a86-88ca-d9558dc6cd63",
-    "Compress": true
+    "Compress": true,
+    "AllowedMethods": ["HEAD", "GET", "OPTIONS"],
+    "CachedMethods": ["HEAD", "GET"]
+  },
+  {
+    "PathPattern": "/admin/*",
+    "TargetOriginId": "ELBOrigin",
+    "ViewerProtocolPolicy": "redirect-to-https",
+    "CachePolicyId": "4135ea2d-6df8-44a3-9df3-4b5a84be39ad",
+    "OriginRequestPolicyId": "216adef6-5c7f-47e4-b989-5492eafa07d3",
+    "Compress": true,
+    "AllowedMethods": ["HEAD", "GET", "OPTIONS", "POST", "PUT", "PATCH", "DELETE"],
+    "CachedMethods": ["HEAD", "GET"]
+  },
+  {
+    "PathPattern": "/*.png",
+    "TargetOriginId": "ELBOrigin",
+    "ViewerProtocolPolicy": "redirect-to-https",
+    "CachePolicyId": "47691a14-5391-4d80-a087-e8d643e88084",
+    "OriginRequestPolicyId": "216adef6-5c7f-47e4-b989-5492eafa07d3",
+    "ResponseHeadersPolicyId": "d271380b-6b84-49f3-879a-838cbf738bd5",
+    "Compress": true,
+    "AllowedMethods": ["HEAD", "GET", "OPTIONS", "POST", "PUT", "PATCH", "DELETE"],
+    "CachedMethods": ["HEAD", "GET"]
+  },
+  {
+    "PathPattern": "/*.svg",
+    "TargetOriginId": "ELBOrigin",
+    "ViewerProtocolPolicy": "redirect-to-https",
+    "CachePolicyId": "47691a14-5391-4d80-a087-e8d643e88084",
+    "OriginRequestPolicyId": "216adef6-5c7f-47e4-b989-5492eafa07d3",
+    "ResponseHeadersPolicyId": "d271380b-6b84-49f3-879a-838cbf738bd5",
+    "Compress": true,
+    "AllowedMethods": ["HEAD", "GET", "OPTIONS", "POST", "PUT", "PATCH", "DELETE"],
+    "CachedMethods": ["HEAD", "GET"]
+  },
+  {
+    "PathPattern": "/*.webp",
+    "TargetOriginId": "ELBOrigin",
+    "ViewerProtocolPolicy": "redirect-to-https",
+    "CachePolicyId": "47691a14-5391-4d80-a087-e8d643e88084",
+    "OriginRequestPolicyId": "216adef6-5c7f-47e4-b989-5492eafa07d3",
+    "ResponseHeadersPolicyId": "d271380b-6b84-49f3-879a-838cbf738bd5",
+    "Compress": true,
+    "AllowedMethods": ["HEAD", "GET", "OPTIONS", "POST", "PUT", "PATCH", "DELETE"],
+    "CachedMethods": ["HEAD", "GET"]
+  },
+  {
+    "PathPattern": "/sites/default/content/*",
+    "TargetOriginId": "ELBOrigin",
+    "ViewerProtocolPolicy": "redirect-to-https",
+    "CachePolicyId": "658327ea-f89d-4fab-a63d-7e88639e58f6",
+    "OriginRequestPolicyId": "216adef6-5c7f-47e4-b989-5492eafa07d3",
+    "Compress": true,
+    "AllowedMethods": ["HEAD", "GET", "OPTIONS", "POST", "PUT", "PATCH", "DELETE"],
+    "CachedMethods": ["HEAD", "GET"]
+  },
+  {
+    "PathPattern": "/sites/default/files/*",
+    "TargetOriginId": "ELBOrigin",
+    "ViewerProtocolPolicy": "redirect-to-https",
+    "CachePolicyId": "658327ea-f89d-4fab-a63d-7e88639e58f6",
+    "OriginRequestPolicyId": "216adef6-5c7f-47e4-b989-5492eafa07d3",
+    "Compress": true,
+    "AllowedMethods": ["HEAD", "GET", "OPTIONS"],
+    "CachedMethods": ["HEAD", "GET"]
+  },
+  {
+    "PathPattern": "/node/*/edit",
+    "TargetOriginId": "ELBOrigin",
+    "ViewerProtocolPolicy": "redirect-to-https",
+    "CachePolicyId": "4135ea2d-6df8-44a3-9df3-4b5a84be39ad",
+    "OriginRequestPolicyId": "216adef6-5c7f-47e4-b989-5492eafa07d3",
+    "Compress": true,
+    "AllowedMethods": ["HEAD", "GET", "OPTIONS", "POST", "PUT", "PATCH", "DELETE"],
+    "CachedMethods": ["HEAD", "GET"]
+  },
+  {
+    "PathPattern": "/node/preview/*/*",
+    "TargetOriginId": "ELBOrigin",
+    "ViewerProtocolPolicy": "redirect-to-https",
+    "CachePolicyId": "4135ea2d-6df8-44a3-9df3-4b5a84be39ad",
+    "OriginRequestPolicyId": "216adef6-5c7f-47e4-b989-5492eafa07d3",
+    "Compress": true,
+    "AllowedMethods": ["HEAD", "GET", "OPTIONS", "POST", "PUT", "PATCH", "DELETE"],
+    "CachedMethods": ["HEAD", "GET"]
+  },
+  {
+    "PathPattern": "/*",
+    "TargetOriginId": "ELBOrigin",
+    "ViewerProtocolPolicy": "redirect-to-https",
+    "CachePolicyId": "2c68d003-8644-49ce-b404-9445b9bb848e",
+    "OriginRequestPolicyId": "216adef6-5c7f-47e4-b989-5492eafa07d3",
+    "Compress": true,
+    "AllowedMethods": ["HEAD", "GET", "OPTIONS", "POST", "PUT", "PATCH", "DELETE"],
+    "CachedMethods": ["HEAD", "GET"],
+    "LambdaFunctionAssociations": [
+      {
+        "LambdaFunctionARN": "arn:aws:lambda:us-east-1:691639156536:function:NodeCacheForCF:9",
+        "EventType": "viewer-request",
+        "IncludeBody": false
+      }
+    ]
   }
 ]

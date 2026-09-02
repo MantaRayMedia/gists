@@ -31,10 +31,32 @@ def build_behavior(conf, target_override=None):
     allowed_methods = conf.get("AllowedMethods", ["HEAD", "GET", "OPTIONS"])
     cached_methods = conf.get("CachedMethods", ["HEAD", "GET"])
 
+    lambda_assoc = conf.get("LambdaFunctionAssociations", [])
+    if isinstance(lambda_assoc, list):
+        lambda_associations = {
+            "Quantity": len(lambda_assoc),
+            **({"Items": lambda_assoc} if lambda_assoc else {})
+        }
+    elif isinstance(lambda_assoc, dict):
+        lambda_associations = lambda_assoc
+    else:
+        lambda_associations = {"Quantity": 0}
+
+    func_assoc = conf.get("FunctionAssociations", [])
+    if isinstance(func_assoc, list):
+        function_associations = {
+            "Quantity": len(func_assoc),
+            **({"Items": func_assoc} if func_assoc else {})
+        }
+    elif isinstance(func_assoc, dict):
+        function_associations = func_assoc
+    else:
+        function_associations = {"Quantity": 0}
+
     behavior = {
         "PathPattern": conf["PathPattern"],
         "TargetOriginId": target_override or conf["TargetOriginId"],
-        "ViewerProtocolPolicy": conf["ViewerProtocolPolicy"],
+        "ViewerProtocolPolicy": conf.get("ViewerProtocolPolicy", "redirect-to-https"),
         "AllowedMethods": {
             "Quantity": len(allowed_methods),
             "Items": allowed_methods,
@@ -44,20 +66,25 @@ def build_behavior(conf, target_override=None):
             }
         },
         "Compress": conf.get("Compress", False),
-        "SmoothStreaming": False,
-        "TrustedSigners": {"Enabled": False, "Quantity": 0},
-        "TrustedKeyGroups": {"Enabled": False, "Quantity": 0},
-        "LambdaFunctionAssociations": {"Quantity": 0},
-        "FunctionAssociations": {"Quantity": 0},
-        "FieldLevelEncryptionId": "",
-        "CachePolicyId": conf["CachePolicyId"],
-        "OriginRequestPolicyId": conf["OriginRequestPolicyId"],
-        "ResponseHeadersPolicyId": conf.get("ResponseHeadersPolicyId", "")
+        "SmoothStreaming": conf.get("SmoothStreaming", False),
+        "TrustedSigners": conf.get("TrustedSigners", {"Enabled": False, "Quantity": 0}),
+        "TrustedKeyGroups": conf.get("TrustedKeyGroups", {"Enabled": False, "Quantity": 0}),
+        "LambdaFunctionAssociations": lambda_associations,
+        "FunctionAssociations": function_associations,
+        "FieldLevelEncryptionId": conf.get("FieldLevelEncryptionId", "")
     }
 
-    # Add ResponseHeadersPolicyId only if present and non-empty
+    if "CachePolicyId" in conf and conf["CachePolicyId"]:
+        behavior["CachePolicyId"] = conf["CachePolicyId"]
+
+    if "OriginRequestPolicyId" in conf and conf["OriginRequestPolicyId"]:
+        behavior["OriginRequestPolicyId"] = conf["OriginRequestPolicyId"]
+
     if "ResponseHeadersPolicyId" in conf and conf["ResponseHeadersPolicyId"]:
         behavior["ResponseHeadersPolicyId"] = conf["ResponseHeadersPolicyId"]
+
+    if "RealtimeLogConfigArn" in conf and conf["RealtimeLogConfigArn"]:
+        behavior["RealtimeLogConfigArn"] = conf["RealtimeLogConfigArn"]
 
     return behavior
 
