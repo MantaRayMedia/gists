@@ -1,0 +1,55 @@
+--- a/src/Entity/Server.php
++++ b/src/Entity/Server.php
+@@ -20,6 +20,7 @@
+ use Drupal\search_api\SearchApiException;
+ use Drupal\search_api\ServerInterface;
+ use Drupal\search_api\Utility\Utility;
++use Drupal\Core\Site\Settings;
+ 
+ /**
+  * Defines the search server configuration entity.
+@@ -221,7 +222,7 @@
+         throw new SearchApiException("Backend ID not set for server \"$label\".");
+       }
+       $backend_plugin_manager = $this->backendPluginManager();
+-      $config = $this->backend_config;
++      $config = $this->getBackendConfig();
+       $config['#server'] = $this;
+       try {
+         $this->backendPlugin = $backend_plugin_manager->createInstance($backend_id, $config);
+@@ -250,6 +251,14 @@
+    * {@inheritdoc}
+    */
+   public function getBackendConfig() {
++    $settings = Settings::get($this->backend, []);
++    $settings = $settings[$this->id] ?? $settings['solr_server'] ?? [];
++
++    $this->backend_config['connector_config'] = array_merge(
++      $this->backend_config['connector_config'] ?? [],
++      $settings
++    );
++
+     return $this->backend_config;
+   }
+ 
+@@ -721,4 +730,20 @@
+     $this->backendPlugin = NULL;
+   }
+ 
++  public static function load($id) {
++    $entity_type_repository = \Drupal::service('entity_type.repository');
++    $entity_type_manager = \Drupal::entityTypeManager();
++    $storage = $entity_type_manager->getStorage(
++      $entity_type_repository->getEntityTypeFromClass(static::class)
++    );
++
++    $server = $storage->load($id);
++
++    if ($server) {
++      $server->setBackendConfig($server->getBackendConfig());
++    }
++
++    return $server;
++  }
++
+ }
